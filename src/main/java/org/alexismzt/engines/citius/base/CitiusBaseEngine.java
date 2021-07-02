@@ -676,74 +676,12 @@
  *
  */
 
-package org.alexismzt.engines.citius;
+package org.alexismzt.engines.citius.base;
 
-import org.alexismzt.engines.citius.handlers.exceptions.PagoActionException;
-import org.alexismzt.engines.citius.pojo.CitiusComprobante;
-import org.alexismzt.engines.citius.pojo.PagoAction;
-import org.alexismzt.engines.citius.pojo.config.ConfigEngine;
-import org.alexismzt.engines.citius.pojo.estrategia.EstrategiaEngine;
-import org.alexismzt.engines.citius.handlers.exceptions.CitiusGeneralException;
-
-
-
-import java.time.LocalDate;
-
-public interface CitiusEngine {
-
-    /**
-     * Se establece la configuración inicial para ejecutar el motor
-     * @param config Configuración
-     */
-    void configurar(ConfigEngine config);
-
-    /**
-     * Obtener la configuracion actual del motor
-     * @return instancia de ConfigEngine
-     */
-    ConfigEngine getConfiguracion();
-    /**
-     * Establecer la estrategia de calculo
-     * @param estrategia Estrategia de calculo
-     */
-    void setEstrategia(EstrategiaEngine estrategia);
-
-    /**
-     * Ejecuta los calculos segun la configuración dada
-     * @param fecha fecha de calculo
-     * @throws CitiusGeneralException se detecto un error irrecuperable en el calculo
-     */
-    void run(LocalDate fecha) throws CitiusGeneralException;
-
-    /**
-     *
-     * @param pagoAction configuración del pago a realizar
-     * @return un comprobante de pago
-     * @throws PagoActionException Retorna si existe algun error al momento de realizar el pago
-     */
-    CitiusComprobante realizarPago(PagoAction pagoAction) throws PagoActionException;
-
-    float calcularInteresOrdinario(final int periodo,final LocalDate fecha, int dias);
-    float calcularCuotaMoratoria();
-
-    float getAmortizacionTabla(final int periodo);
-    float getInteresTabla(final int periodo);
-
-    float getCapital(final int periodo);
-    float getCapital(final int periodo, final LocalDate fecha);
-
-    float getCapitalPagado(final int periodo);
-    float getCapitalPagado(final int periodo, LocalDate fecha);
-
-    float getInteres(final int periodo);
-    float getInteres(final int periodo, final LocalDate fecha);
-
-    float getInteresPagado(final int periodo, final LocalDate fecha);
-    float getInteresPagado(final int periodo);
-
-    float getInteresMoratorio(final int periodo);
-    float getInteresMoratorio(final int periodo,final  LocalDate fecha);
-
-    float getInteresMoratorioPagado(final int periodo);
-    float getInteresMoratorioPagado(final int periodo,final  LocalDate fecha);
+/**
+ * Implementación de la Interface CitiusEngine
+ * Se establecen las direcctices estandar para el calculo de los intereses
+ * segun la configuración que se establezca
+ */
+public class CitiusBaseEngine {
 }
