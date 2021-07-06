@@ -676,53 +676,75 @@
  *
  */
 
-package org.alexismzt.engines.citius.pojo;
-
-import lombok.Getter;
-import lombok.Setter;
+import org.alexismzt.engines.citius.PagoChained;
+import org.alexismzt.engines.citius.base.pagos.AportacionCapital;
+import org.alexismzt.engines.citius.base.pagos.PagoOrdinarioPendiente;
+import org.alexismzt.engines.citius.base.pagos.PagoCapitalPendiente;
+import org.alexismzt.engines.citius.base.pagos.PagoCuotaMoratoriaPendiente;
+import org.alexismzt.engines.citius.pojo.CitiusComprobante;
+import org.alexismzt.engines.citius.pojo.Periodo;
+import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
-@Getter
-public class CitiusComprobante {
-    LocalDate fechaPago;
-    BigDecimal pagoOrdinario = BigDecimal.ZERO;
-    BigDecimal pagoCuotaMoratoria = BigDecimal.ZERO;
-    BigDecimal pagoCapital = BigDecimal.ZERO;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-    public void setFechaPago(LocalDate fechaPago) {
-        this.fechaPago = fechaPago;
-    }
 
-    public void setPagoOrdinario(BigDecimal pagoOrdinario) {
-        this.pagoOrdinario=  this.pagoOrdinario.add(pagoOrdinario);
-    }
+public class TestPagoChained {
 
-    public void setPagoCuotaMoratoria(BigDecimal pagoCuotaMoratoria) {
-        this.pagoCuotaMoratoria = this.pagoCuotaMoratoria.add(pagoCuotaMoratoria);
-    }
+    @Test
+    void testPagoChain() {
+        PagoChained moratorio = new PagoCuotaMoratoriaPendiente();
+        PagoChained ordinario = new PagoOrdinarioPendiente();
+        PagoChained capital = new PagoCapitalPendiente();
+        PagoChained restoCapital = new AportacionCapital();
 
-    public void setPagoCapital(BigDecimal pagoCapital) {
-        this.pagoCapital = this.pagoCapital.add(pagoCapital);
-    }
+        moratorio.setNext(ordinario);
+        ordinario.setNext(capital);
+        capital.setNext(null);
 
-    public BigDecimal getTotalPagado(){
-        return pagoCapital.add(
-                pagoOrdinario.add(
-                        pagoCuotaMoratoria
-                )
+        List<Periodo> periodos = new ArrayList<>();
+        BigDecimal montoPago = BigDecimal.valueOf(2500);
+        LocalDate fecha = LocalDate.now();
+        Periodo periodo1 = new Periodo();
+        periodo1.setPendienteCapital(BigDecimal.valueOf(1900.02));
+        periodo1.setPendienteOrdinario(BigDecimal.valueOf(1800.36));
+        periodo1.setPendienteCuotaMora(BigDecimal.valueOf(26.22));
+        periodos.add(periodo1);
+
+        Periodo periodo2 = new Periodo();
+        periodo2.setPendienteCapital(BigDecimal.valueOf(100.2));
+        periodo2.setPendienteOrdinario(BigDecimal.valueOf(20.5));
+        periodo2.setPendienteCuotaMora(BigDecimal.valueOf(0));
+
+        periodos.add(periodo2);
+
+        CitiusComprobante comprobante = new CitiusComprobante();
+
+        AtomicReference<BigDecimal> bigDecimalAtomicReference = new AtomicReference<>();
+        bigDecimalAtomicReference.set(montoPago);
+
+        moratorio.setComprobante(comprobante);
+
+        periodos.forEach(
+                x ->
+                {
+                    BigDecimal v = moratorio.realizarAccion(bigDecimalAtomicReference.get(), fecha, x);
+                    bigDecimalAtomicReference.set(v);
+                }
         );
-    }
 
-    @Override
-    public String toString() {
-        return "CitiusComprobante{" +
-                "\nfechaPago=" + fechaPago +
-                "\npagoOrdinario =" + pagoOrdinario +
-                "\npagoCuotaMoratoria =" + pagoCuotaMoratoria +
-                "\npagoCapital =" + pagoCapital +
-                "\nTotal Pagado = " +getTotalPagado() +
-                "\n}";
+        restoCapital.setComprobante(comprobante);
+        bigDecimalAtomicReference.set(
+        restoCapital.realizarAccion(bigDecimalAtomicReference.get(), fecha, periodo2));
+
+        comprobante = restoCapital.getComprobante();
+        System.out.println(comprobante.toString());
+        System.out.println("Resto: " + bigDecimalAtomicReference.get());
+        assertEquals(0, montoPago.compareTo(comprobante.getTotalPagado()));
     }
 }

@@ -676,53 +676,67 @@
  *
  */
 
-package org.alexismzt.engines.citius.pojo;
+package org.alexismzt.engines.citius.base.pagos;
 
-import lombok.Getter;
-import lombok.Setter;
+import org.alexismzt.engines.citius.PagoChained;
+import org.alexismzt.engines.citius.handlers.Par;
+import org.alexismzt.engines.citius.handlers.exceptions.PagoChainedException;
+import org.alexismzt.engines.citius.pojo.CitiusComprobante;
+import org.alexismzt.engines.citius.pojo.Periodo;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 
-@Getter
-public class CitiusComprobante {
-    LocalDate fechaPago;
-    BigDecimal pagoOrdinario = BigDecimal.ZERO;
-    BigDecimal pagoCuotaMoratoria = BigDecimal.ZERO;
-    BigDecimal pagoCapital = BigDecimal.ZERO;
-
-    public void setFechaPago(LocalDate fechaPago) {
-        this.fechaPago = fechaPago;
-    }
-
-    public void setPagoOrdinario(BigDecimal pagoOrdinario) {
-        this.pagoOrdinario=  this.pagoOrdinario.add(pagoOrdinario);
-    }
-
-    public void setPagoCuotaMoratoria(BigDecimal pagoCuotaMoratoria) {
-        this.pagoCuotaMoratoria = this.pagoCuotaMoratoria.add(pagoCuotaMoratoria);
-    }
-
-    public void setPagoCapital(BigDecimal pagoCapital) {
-        this.pagoCapital = this.pagoCapital.add(pagoCapital);
-    }
-
-    public BigDecimal getTotalPagado(){
-        return pagoCapital.add(
-                pagoOrdinario.add(
-                        pagoCuotaMoratoria
-                )
-        );
+public class AbstractPagoChained implements PagoChained {
+    PagoChained next;
+    CitiusComprobante comprobantePago;
+    @Override
+    public BigDecimal realizarAccion(BigDecimal monto, LocalDate fecha, Periodo periodo) throws PagoChainedException {
+        comprobantePago = getComprobante();
+        if(monto.compareTo(BigDecimal.ZERO) <= 0 ||
+                 periodo.getPendiente().compareTo(BigDecimal.ZERO) <= 0)
+            return BigDecimal.ZERO;
+        comprobantePago.setFechaPago(fecha);
+        if(next != null)
+            next.setComprobante(comprobantePago);
+        return monto;
     }
 
     @Override
-    public String toString() {
-        return "CitiusComprobante{" +
-                "\nfechaPago=" + fechaPago +
-                "\npagoOrdinario =" + pagoOrdinario +
-                "\npagoCuotaMoratoria =" + pagoCuotaMoratoria +
-                "\npagoCapital =" + pagoCapital +
-                "\nTotal Pagado = " +getTotalPagado() +
-                "\n}";
+    public PagoChained getNext() {
+        return next;
+    }
+
+    @Override
+    public void setNext(PagoChained pagoChained) {
+        this.next = pagoChained;
+    }
+
+    @Override
+    public CitiusComprobante getComprobante() {
+        if(comprobantePago == null)
+            return new CitiusComprobante();
+        return comprobantePago;
+    }
+
+    @Override
+    public void setComprobante(CitiusComprobante comprobante) {
+        this.comprobantePago  = comprobante;
+    }
+
+    protected Par<BigDecimal, BigDecimal> evaluate(BigDecimal income, BigDecimal pending) {
+        BigDecimal retValue;
+        if (income.compareTo(BigDecimal.ZERO) <= 0) {
+            return new Par<>(BigDecimal.ZERO,BigDecimal.ZERO);
+        }
+        if (income.compareTo(pending) > 0) {
+            income = income.subtract(pending);
+            retValue = pending;
+        } else {
+            retValue = income;
+            income = BigDecimal.ZERO;
+        }
+        return new Par<>(retValue, income);
     }
 }

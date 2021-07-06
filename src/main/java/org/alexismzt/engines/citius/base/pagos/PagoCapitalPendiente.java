@@ -676,53 +676,31 @@
  *
  */
 
-package org.alexismzt.engines.citius.pojo;
+package org.alexismzt.engines.citius.base.pagos;
 
-import lombok.Getter;
-import lombok.Setter;
+import org.alexismzt.engines.citius.PagoChained;
+import org.alexismzt.engines.citius.handlers.Par;
+import org.alexismzt.engines.citius.handlers.exceptions.PagoChainedException;
+import org.alexismzt.engines.citius.pojo.Periodo;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-@Getter
-public class CitiusComprobante {
-    LocalDate fechaPago;
-    BigDecimal pagoOrdinario = BigDecimal.ZERO;
-    BigDecimal pagoCuotaMoratoria = BigDecimal.ZERO;
-    BigDecimal pagoCapital = BigDecimal.ZERO;
-
-    public void setFechaPago(LocalDate fechaPago) {
-        this.fechaPago = fechaPago;
-    }
-
-    public void setPagoOrdinario(BigDecimal pagoOrdinario) {
-        this.pagoOrdinario=  this.pagoOrdinario.add(pagoOrdinario);
-    }
-
-    public void setPagoCuotaMoratoria(BigDecimal pagoCuotaMoratoria) {
-        this.pagoCuotaMoratoria = this.pagoCuotaMoratoria.add(pagoCuotaMoratoria);
-    }
-
-    public void setPagoCapital(BigDecimal pagoCapital) {
-        this.pagoCapital = this.pagoCapital.add(pagoCapital);
-    }
-
-    public BigDecimal getTotalPagado(){
-        return pagoCapital.add(
-                pagoOrdinario.add(
-                        pagoCuotaMoratoria
-                )
-        );
-    }
-
+public class PagoCapitalPendiente extends AbstractPagoChained implements PagoChained {
     @Override
-    public String toString() {
-        return "CitiusComprobante{" +
-                "\nfechaPago=" + fechaPago +
-                "\npagoOrdinario =" + pagoOrdinario +
-                "\npagoCuotaMoratoria =" + pagoCuotaMoratoria +
-                "\npagoCapital =" + pagoCapital +
-                "\nTotal Pagado = " +getTotalPagado() +
-                "\n}";
+    public BigDecimal realizarAccion(BigDecimal monto, LocalDate fecha, Periodo periodo) throws PagoChainedException {
+        if(super.realizarAccion(monto, fecha, periodo).compareTo(BigDecimal.ZERO) > 0) //boilerplate de inicialización
+        {
+            Par<BigDecimal, BigDecimal> parPago = evaluate(monto, periodo.getPendienteCapital());
+            if (parPago != null) {
+                comprobantePago.setPagoCapital(parPago.getFirst());
+                monto = parPago.getSecond();
+            }
+        }
+        if(next != null) {
+            next.setComprobante(getComprobante());
+            return next.realizarAccion(monto, fecha, periodo);
+        }
+        return monto;
     }
 }

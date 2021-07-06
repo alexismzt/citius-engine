@@ -676,53 +676,19 @@
  *
  */
 
-package org.alexismzt.engines.citius.pojo;
+package org.alexismzt.engines.citius;
 
-import lombok.Getter;
-import lombok.Setter;
+import org.alexismzt.engines.citius.handlers.exceptions.PagoChainedException;
+import org.alexismzt.engines.citius.pojo.CitiusComprobante;
+import org.alexismzt.engines.citius.pojo.Periodo;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-@Getter
-public class CitiusComprobante {
-    LocalDate fechaPago;
-    BigDecimal pagoOrdinario = BigDecimal.ZERO;
-    BigDecimal pagoCuotaMoratoria = BigDecimal.ZERO;
-    BigDecimal pagoCapital = BigDecimal.ZERO;
-
-    public void setFechaPago(LocalDate fechaPago) {
-        this.fechaPago = fechaPago;
-    }
-
-    public void setPagoOrdinario(BigDecimal pagoOrdinario) {
-        this.pagoOrdinario=  this.pagoOrdinario.add(pagoOrdinario);
-    }
-
-    public void setPagoCuotaMoratoria(BigDecimal pagoCuotaMoratoria) {
-        this.pagoCuotaMoratoria = this.pagoCuotaMoratoria.add(pagoCuotaMoratoria);
-    }
-
-    public void setPagoCapital(BigDecimal pagoCapital) {
-        this.pagoCapital = this.pagoCapital.add(pagoCapital);
-    }
-
-    public BigDecimal getTotalPagado(){
-        return pagoCapital.add(
-                pagoOrdinario.add(
-                        pagoCuotaMoratoria
-                )
-        );
-    }
-
-    @Override
-    public String toString() {
-        return "CitiusComprobante{" +
-                "\nfechaPago=" + fechaPago +
-                "\npagoOrdinario =" + pagoOrdinario +
-                "\npagoCuotaMoratoria =" + pagoCuotaMoratoria +
-                "\npagoCapital =" + pagoCapital +
-                "\nTotal Pagado = " +getTotalPagado() +
-                "\n}";
-    }
+public interface PagoChained {
+    BigDecimal realizarAccion(BigDecimal monto, LocalDate fecha, Periodo periodo) throws PagoChainedException;
+    PagoChained getNext();
+    void setNext(PagoChained pagoChained);
+    CitiusComprobante getComprobante();
+    void setComprobante(CitiusComprobante comprobante);
 }
