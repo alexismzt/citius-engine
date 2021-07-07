@@ -676,19 +676,7 @@
  *
  */
 
-package org.alexismzt.engines.citius;
+package org.alexismzt.engines.citius.handlers.exceptions;
 
-import org.alexismzt.engines.citius.handlers.exceptions.PagoChainedException;
-import org.alexismzt.engines.citius.pojo.CitiusComprobante;
-import org.alexismzt.engines.citius.pojo.Periodo;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-
-public interface PagoChained {
-    BigDecimal realizarAccion(BigDecimal monto, LocalDate fecha, Periodo periodo) throws PagoChainedException;
-    PagoChained getNext();
-    void setNext(PagoChained pagoChained);
-    CitiusComprobante getComprobante();
-    void setComprobante(CitiusComprobante comprobante);
+public class CargoNoInicializado extends RuntimeException {
 }

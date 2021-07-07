@@ -676,26 +676,71 @@
  *
  */
 
-package org.alexismzt.engines.citius.base.pagos;
+package org.alexismzt.engines.citius.base;
 
-import org.alexismzt.engines.citius.base.PagoChained;
-import org.alexismzt.engines.citius.handlers.exceptions.PagoChainedException;
-import org.alexismzt.engines.citius.pojo.Periodo;
+import org.alexismzt.engines.citius.handlers.exceptions.CitiusGeneralException;
+import org.alexismzt.engines.citius.handlers.exceptions.PagoActionException;
+import org.alexismzt.engines.citius.pojo.CitiusComprobante;
+import org.alexismzt.engines.citius.pojo.PagoAction;
+import org.alexismzt.engines.citius.pojo.config.ConfigEngine;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 
-public class AportacionCapital extends AbstractPagoChained implements PagoChained {
+/**
+ * Implementación de la Interface CitiusEngine
+ * Se establecen las direcctices estandar para el calculo de los intereses
+ * segun la configuración que se establezca
+ */
+public abstract class CitiusEngineImpl implements CitiusEngine {
+
+    protected BigDecimal TASA_ORDINARIA = BigDecimal.ZERO;
+    protected BigDecimal FACTOR_MORATORIO = BigDecimal.ZERO;
+    protected boolean usarCuota = false;
+
+    /**
+     * Se establece la configuración inicial para ejecutar el motor
+     *
+     * @param config Configuración
+     */
     @Override
-    public BigDecimal realizarAccion(BigDecimal monto, LocalDate fecha, Periodo periodo) throws PagoChainedException {
-        if(super.realizarAccion(monto, fecha, periodo).compareTo(BigDecimal.ZERO) > 0){
-            comprobantePago.setPagoCapital(monto);
-            monto = BigDecimal.ZERO;
-        }
-        if(next != null) {
-            next.setComprobante(getComprobante());
-            return next.realizarAccion(monto, fecha, periodo);
-        }
-        return monto;
+    public void configurar(ConfigEngine config) {
+
+    }
+
+    /**
+     * Obtener la configuracion actual del motor
+     *
+     * @return instancia de ConfigEngine
+     */
+    @Override
+    public ConfigEngine getConfiguracion() {
+        return null;
+    }
+
+    /**
+     * Ejecuta los calculos segun la configuración dada
+     *
+     * @param fecha fecha de calculo
+     * @throws CitiusGeneralException se detecto un error irrecuperable en el calculo
+     */
+    @Override
+    public void run(LocalDate fecha) throws CitiusGeneralException {
+
+    }
+
+    /**
+     * @param pagoAction configuración del pago a realizar
+     * @return un comprobante de pago
+     * @throws PagoActionException Retorna si existe algun error al momento de realizar el pago
+     */
+    @Override
+    public CitiusComprobante realizarPago(PagoAction pagoAction) throws PagoActionException {
+        return null;
+    }
+
+    protected BigDecimal scaled(BigDecimal value){
+        return value.setScale(2, RoundingMode.UP);
     }
 }

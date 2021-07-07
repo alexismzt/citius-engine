@@ -676,26 +676,30 @@
  *
  */
 
-package org.alexismzt.engines.citius.base.pagos;
+package org.alexismzt.engines.citius.pojo;
 
-import org.alexismzt.engines.citius.base.PagoChained;
-import org.alexismzt.engines.citius.handlers.exceptions.PagoChainedException;
-import org.alexismzt.engines.citius.pojo.Periodo;
+import lombok.Data;
+import org.alexismzt.engines.citius.helpers.TipoConcepto;
+import org.alexismzt.engines.citius.helpers.TipoInstrumento;
+import org.alexismzt.engines.citius.helpers.TipoOperacion;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-public class AportacionCapital extends AbstractPagoChained implements PagoChained {
-    @Override
-    public BigDecimal realizarAccion(BigDecimal monto, LocalDate fecha, Periodo periodo) throws PagoChainedException {
-        if(super.realizarAccion(monto, fecha, periodo).compareTo(BigDecimal.ZERO) > 0){
-            comprobantePago.setPagoCapital(monto);
-            monto = BigDecimal.ZERO;
-        }
-        if(next != null) {
-            next.setComprobante(getComprobante());
-            return next.realizarAccion(monto, fecha, periodo);
-        }
-        return monto;
-    }
+@Data
+public class Movimiento {
+    private TipoConcepto tipoConcepto;
+    private String concepto;
+    private LocalDate fecha;
+    private BigDecimal cargo;
+    private BigDecimal abono;
+    private BigDecimal capitalPago;
+    private BigDecimal ordinarioPago;
+    private BigDecimal moraPago;
+    private BigDecimal otroPago;
+    private String transaccion;
+    private TipoInstrumento instrumento;
+    private int periodo;
+    private TipoOperacion operacion;
+    private boolean condonado;
 }

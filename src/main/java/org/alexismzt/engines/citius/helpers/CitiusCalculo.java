@@ -676,26 +676,12 @@
  *
  */
 
-package org.alexismzt.engines.citius.base.pagos;
+package org.alexismzt.engines.citius.helpers;
 
-import org.alexismzt.engines.citius.base.PagoChained;
-import org.alexismzt.engines.citius.handlers.exceptions.PagoChainedException;
-import org.alexismzt.engines.citius.pojo.Periodo;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-
-public class AportacionCapital extends AbstractPagoChained implements PagoChained {
-    @Override
-    public BigDecimal realizarAccion(BigDecimal monto, LocalDate fecha, Periodo periodo) throws PagoChainedException {
-        if(super.realizarAccion(monto, fecha, periodo).compareTo(BigDecimal.ZERO) > 0){
-            comprobantePago.setPagoCapital(monto);
-            monto = BigDecimal.ZERO;
-        }
-        if(next != null) {
-            next.setComprobante(getComprobante());
-            return next.realizarAccion(monto, fecha, periodo);
-        }
-        return monto;
-    }
+public enum CitiusCalculo {
+    FRANCES,
+    ALEMAN,
+    AMERICANO,
+    DIRECTO,
+    PERSONALIZADO
 }

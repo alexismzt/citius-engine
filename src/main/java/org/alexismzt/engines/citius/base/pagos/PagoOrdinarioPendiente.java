@@ -678,7 +678,7 @@
 
 package org.alexismzt.engines.citius.base.pagos;
 
-import org.alexismzt.engines.citius.PagoChained;
+import org.alexismzt.engines.citius.base.PagoChained;
 import org.alexismzt.engines.citius.handlers.Par;
 import org.alexismzt.engines.citius.handlers.exceptions.PagoChainedException;
 import org.alexismzt.engines.citius.pojo.Periodo;

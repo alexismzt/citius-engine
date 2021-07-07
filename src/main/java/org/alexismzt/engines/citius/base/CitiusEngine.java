@@ -676,26 +676,50 @@
  *
  */
 
-package org.alexismzt.engines.citius.base.pagos;
+package org.alexismzt.engines.citius.base;
 
-import org.alexismzt.engines.citius.base.PagoChained;
-import org.alexismzt.engines.citius.handlers.exceptions.PagoChainedException;
+import org.alexismzt.engines.citius.handlers.exceptions.PagoActionException;
+import org.alexismzt.engines.citius.pojo.CitiusComprobante;
+import org.alexismzt.engines.citius.pojo.PagoAction;
 import org.alexismzt.engines.citius.pojo.Periodo;
+import org.alexismzt.engines.citius.pojo.config.ConfigEngine;
+import org.alexismzt.engines.citius.helpers.CitiusCalculo;
+import org.alexismzt.engines.citius.handlers.exceptions.CitiusGeneralException;
+
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-public class AportacionCapital extends AbstractPagoChained implements PagoChained {
-    @Override
-    public BigDecimal realizarAccion(BigDecimal monto, LocalDate fecha, Periodo periodo) throws PagoChainedException {
-        if(super.realizarAccion(monto, fecha, periodo).compareTo(BigDecimal.ZERO) > 0){
-            comprobantePago.setPagoCapital(monto);
-            monto = BigDecimal.ZERO;
-        }
-        if(next != null) {
-            next.setComprobante(getComprobante());
-            return next.realizarAccion(monto, fecha, periodo);
-        }
-        return monto;
-    }
+public interface CitiusEngine {
+
+    /**
+     * Se establece la configuración inicial para ejecutar el motor
+     * @param config Configuración
+     */
+    void configurar(ConfigEngine config);
+
+    /**
+     * Obtener la configuracion actual del motor
+     * @return instancia de ConfigEngine
+     */
+    ConfigEngine getConfiguracion();
+
+    /**
+     * Ejecuta los calculos segun la configuración dada
+     * @param fecha fecha de calculo
+     * @throws CitiusGeneralException se detecto un error irrecuperable en el calculo
+     */
+    void run(LocalDate fecha) throws CitiusGeneralException;
+
+    /**
+     *
+     * @param pagoAction configuración del pago a realizar
+     * @return un comprobante de pago
+     * @throws PagoActionException Retorna si existe algun error al momento de realizar el pago
+     */
+    CitiusComprobante realizarPago(PagoAction pagoAction) throws PagoActionException;
+
+    BigDecimal calcularInteresOrdinario(final BigDecimal monto, final Periodo periodo, final LocalDate fecha, int dias);
+    BigDecimal calcularCuotaMoratoria(final BigDecimal monto, final Periodo periodo, final LocalDate fecha, int dias);
+
 }

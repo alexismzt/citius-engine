@@ -676,12 +676,102 @@
  *
  */
 
-package org.alexismzt.engines.citius.base;
+package org.alexismzt.engines.citius.helpers;
 
-/**
- * Implementación de la Interface CitiusEngine
- * Se establecen las direcctices estandar para el calculo de los intereses
- * segun la configuración que se establezca
- */
-public class CitiusBaseEngine {
+public enum TipoConcepto {
+    NOT_INIT_OR_NULL(0), INTERES_ORDINARIO(1), INTERES_MORATORIO(2), COBRO_PENALIZACION_PRONTO(3), MULTA(4),
+    INTERES_ORDINARIO_PROP(5), ABONO(6), ABONO_Y_CAPITAL(7), ABONO_ANTICIPADO(8), APORTACION_CAPITAL(9), DESCUENTO(10),
+    DESCUENTO_CANT(11), CONDONACION_MORA(12), CONDONACION_ORD(13), LIQUIDACION(14), LIQUIDACION_ACUERDO(15),
+    REESTRUCTURA(16), REESTRUCTURA_ACUERDO(17), OTROS_CARGOS(18), ROW_CONTROL_TOTALS(19), AJUSTE_AUTOMATICO(20),
+    NOT_USED(21), NOT_USED2(22), NOT_USED3(23), NOT_USED4(24), NOT_USED5(25), ALL(26);
+
+    private final int id;
+
+    TipoConcepto(int id) {
+        this.id = id;
+    }
+
+    public String getText() {
+        String strValue = "";
+        switch (this) {
+            case NOT_INIT_OR_NULL:
+                strValue = "NOT INIT OR NULL";
+                break;
+            case INTERES_ORDINARIO:
+                strValue = "INTERES ORDINARIO";
+                break;
+            case INTERES_MORATORIO:
+                strValue = "INTERES MORATORIO";
+                break;
+            case COBRO_PENALIZACION_PRONTO:
+                strValue = "COBRO: PENALIZACION PRONTO PAGO";
+                break;
+            case MULTA:
+                strValue = "MULTA";
+                break;
+            case INTERES_ORDINARIO_PROP:
+                strValue = "INTERES ORDINARIO PROP";
+                break;
+            case ABONO:
+                strValue = "ABONO";
+                break;
+            case ABONO_Y_CAPITAL:
+                strValue = "ABONO Y CAPITAL";
+                break;
+            case ABONO_ANTICIPADO:
+                strValue = "ABONO ANTICIPADO";
+                break;
+            case APORTACION_CAPITAL:
+                strValue = "APORTACION CAPITAL";
+                break;
+            case DESCUENTO:
+                strValue = "DESCUENTO";
+                break;
+            case DESCUENTO_CANT:
+                strValue = "DESCUENTO EN CANTIDAD";
+                break;
+            case CONDONACION_MORA:
+                strValue = "CONDONACIÓN DE MORATORIOS";
+                break;
+            case CONDONACION_ORD:
+                strValue = "CONDONACIÓN DE INTERES ORDINARIO";
+                break;
+            case LIQUIDACION:
+                strValue = "LIQUIDACIÓN";
+                break;
+            case LIQUIDACION_ACUERDO:
+                strValue = "LIQUIDACION POR ACUERDO";
+                break;
+            case REESTRUCTURA:
+                strValue = "REESTRUCTURA DE CREDITO";
+                break;
+            case REESTRUCTURA_ACUERDO:
+                strValue = "REESTRUCTURA POR ACUERDO";
+                break;
+            case OTROS_CARGOS:
+                strValue = "OTROS CARGOS";
+                break;
+            case ROW_CONTROL_TOTALS:
+                strValue = "ROW CONTROL TOTALS";
+                break;
+            case AJUSTE_AUTOMATICO:
+                strValue = "AJUSTE AUTOMÁTICO";
+                break;
+            case NOT_USED:
+            case NOT_USED2:
+            case NOT_USED3:
+            case NOT_USED4:
+            case NOT_USED5:
+                strValue = "NO IMPLEMENTADO";
+                break;
+            case ALL:
+                strValue = "TODOS LOS TIPOS";
+                break;
+        }
+        return strValue;
+    }
+
+    public int getValue() {
+        return this.id;
+    }
 }

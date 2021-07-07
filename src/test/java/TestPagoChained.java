@@ -676,7 +676,7 @@
  *
  */
 
-import org.alexismzt.engines.citius.PagoChained;
+import org.alexismzt.engines.citius.base.PagoChained;
 import org.alexismzt.engines.citius.base.pagos.AportacionCapital;
 import org.alexismzt.engines.citius.base.pagos.PagoOrdinarioPendiente;
 import org.alexismzt.engines.citius.base.pagos.PagoCapitalPendiente;
@@ -686,6 +686,7 @@ import org.alexismzt.engines.citius.pojo.Periodo;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -695,6 +696,22 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 public class TestPagoChained {
+
+    @Test
+    void testRealNumbers(){
+        double d1 = 10;
+        double d2 = 3;
+        System.out.println("Double:\t 10 / 3 = " + (d1 / d2));
+
+        float f1 = 10f;
+        float f2 = 3f;
+        System.out.println("Float:\t 10 / 3 = " + (f1 / f2));
+
+        // Exception!
+        BigDecimal bd3 = new BigDecimal("10");
+        BigDecimal bd4 = new BigDecimal("3");
+        System.out.println("BigDec:\t 10 / 3 = " + (bd3.divide(bd4, MathContext.DECIMAL64)));
+    }
 
     @Test
     void testPagoChain() {

@@ -676,26 +676,21 @@
  *
  */
 
-package org.alexismzt.engines.citius.base.pagos;
+package org.alexismzt.engines.citius;
 
-import org.alexismzt.engines.citius.base.PagoChained;
-import org.alexismzt.engines.citius.handlers.exceptions.PagoChainedException;
+import lombok.Data;
+import org.alexismzt.engines.citius.base.CitiusEngine;
 import org.alexismzt.engines.citius.pojo.Periodo;
+import org.alexismzt.engines.citius.pojo.config.ConfigEngine;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
 
-public class AportacionCapital extends AbstractPagoChained implements PagoChained {
-    @Override
-    public BigDecimal realizarAccion(BigDecimal monto, LocalDate fecha, Periodo periodo) throws PagoChainedException {
-        if(super.realizarAccion(monto, fecha, periodo).compareTo(BigDecimal.ZERO) > 0){
-            comprobantePago.setPagoCapital(monto);
-            monto = BigDecimal.ZERO;
-        }
-        if(next != null) {
-            next.setComprobante(getComprobante());
-            return next.realizarAccion(monto, fecha, periodo);
-        }
-        return monto;
-    }
+@Data
+public class Periodos {
+    Map<Integer, Periodo> periodos = new HashMap<>();
+    ConfigEngine configuracion;
+    CitiusEngine engine;
+
+
 }

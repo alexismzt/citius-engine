@@ -679,17 +679,19 @@
 package org.alexismzt.engines.citius.pojo;
 
 import lombok.Getter;
-import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
 
 @Getter
 public class CitiusComprobante {
-    LocalDate fechaPago;
-    BigDecimal pagoOrdinario = BigDecimal.ZERO;
-    BigDecimal pagoCuotaMoratoria = BigDecimal.ZERO;
-    BigDecimal pagoCapital = BigDecimal.ZERO;
+    private LocalDate fechaPago;
+    private BigDecimal pagoOrdinario = BigDecimal.ZERO;
+    private BigDecimal pagoCuotaMoratoria = BigDecimal.ZERO;
+    private BigDecimal pagoCapital = BigDecimal.ZERO;
+    private final Map<Integer, BigDecimal> resumen = new HashMap<>();
 
     public void setFechaPago(LocalDate fechaPago) {
         this.fechaPago = fechaPago;
@@ -715,14 +717,18 @@ public class CitiusComprobante {
         );
     }
 
+    public void addPeriodoPagado(int periodo, BigDecimal totalPagado){
+        resumen.put(periodo, totalPagado);
+    }
+
     @Override
     public String toString() {
         return "CitiusComprobante{" +
-                "\nfechaPago=" + fechaPago +
-                "\npagoOrdinario =" + pagoOrdinario +
-                "\npagoCuotaMoratoria =" + pagoCuotaMoratoria +
-                "\npagoCapital =" + pagoCapital +
-                "\nTotal Pagado = " +getTotalPagado() +
-                "\n}";
+                "fechaPago=" + fechaPago +
+                ", pagoOrdinario=" + pagoOrdinario +
+                ", pagoCuotaMoratoria=" + pagoCuotaMoratoria +
+                ", pagoCapital=" + pagoCapital +
+                ", resumen=" + resumen +
+                '}';
     }
 }

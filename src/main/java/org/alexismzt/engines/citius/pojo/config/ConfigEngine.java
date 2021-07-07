@@ -678,5 +678,15 @@
 
 package org.alexismzt.engines.citius.pojo.config;
 
+import lombok.Data;
+
+import java.math.BigDecimal;
+
+@Data
 public final class ConfigEngine {
+    private BigDecimal montoPrestamo;
+    private BigDecimal tasaOrdinaria;
+    private boolean cuotaMoratoria;
+    private BigDecimal montoMoratorio;
+    private int plazo;
 }

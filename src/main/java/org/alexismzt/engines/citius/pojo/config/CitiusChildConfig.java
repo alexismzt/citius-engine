@@ -676,7 +676,14 @@
  *
  */
 
-package org.alexismzt.engines.citius.pojo.estrategia;
+package org.alexismzt.engines.citius.pojo.config;
 
-public class EstrategiaEngine {
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@Getter
+@AllArgsConstructor
+public class CitiusChildConfig {
+    final int diasPeriodo;
+
 }

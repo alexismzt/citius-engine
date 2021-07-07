@@ -676,26 +676,29 @@
  *
  */
 
-package org.alexismzt.engines.citius.base.pagos;
+package org.alexismzt.engines.citius;
 
-import org.alexismzt.engines.citius.base.PagoChained;
-import org.alexismzt.engines.citius.handlers.exceptions.PagoChainedException;
-import org.alexismzt.engines.citius.pojo.Periodo;
+import org.alexismzt.engines.citius.base.CitiusEngine;
+import org.alexismzt.engines.citius.base.modo.CalculoSaldoInsoluto;
+import org.alexismzt.engines.citius.helpers.CitiusCalculo;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-
-public class AportacionCapital extends AbstractPagoChained implements PagoChained {
-    @Override
-    public BigDecimal realizarAccion(BigDecimal monto, LocalDate fecha, Periodo periodo) throws PagoChainedException {
-        if(super.realizarAccion(monto, fecha, periodo).compareTo(BigDecimal.ZERO) > 0){
-            comprobantePago.setPagoCapital(monto);
-            monto = BigDecimal.ZERO;
-        }
-        if(next != null) {
-            next.setComprobante(getComprobante());
-            return next.realizarAccion(monto, fecha, periodo);
-        }
-        return monto;
+public class CitiusEngineFactory {
+    public static void main(String[] args) throws Exception {
+        throw new Exception("no esta implementado");
     }
+
+    public static CitiusEngine getInstance(CitiusCalculo strategy){
+        CitiusEngine engine;
+        switch (strategy){
+            case ALEMAN:
+            case FRANCES:
+                engine = new CalculoSaldoInsoluto();
+                break;
+            default:
+                engine = null;
+        }
+
+        return engine;
+    }
+
 }

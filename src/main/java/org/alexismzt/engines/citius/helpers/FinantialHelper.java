@@ -676,26 +676,92 @@
  *
  */
 
-package org.alexismzt.engines.citius.base.pagos;
+package org.alexismzt.engines.citius.helpers;
 
-import org.alexismzt.engines.citius.base.PagoChained;
-import org.alexismzt.engines.citius.handlers.exceptions.PagoChainedException;
-import org.alexismzt.engines.citius.pojo.Periodo;
+import org.alexismzt.engines.citius.handlers.Par;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.math.RoundingMode;
+import java.util.HashMap;
+import java.util.Map;
 
-public class AportacionCapital extends AbstractPagoChained implements PagoChained {
-    @Override
-    public BigDecimal realizarAccion(BigDecimal monto, LocalDate fecha, Periodo periodo) throws PagoChainedException {
-        if(super.realizarAccion(monto, fecha, periodo).compareTo(BigDecimal.ZERO) > 0){
-            comprobantePago.setPagoCapital(monto);
-            monto = BigDecimal.ZERO;
+public final class FinantialHelper {
+
+    /**
+     * Metodo para calcular el pago de una parcialidad basado en el metodo Frances de amortización
+     * Formula
+     *          P =  C * ( r / (1 - (1 + r)^-n ) )
+     * @param monto C representa el capital Inicial
+     * @param tasa r representa la tasa de interés
+     * @param plazo n representa el plazo
+     * @return P pago de la parcialidad
+     */
+    public static double parcialidad_Frances(double monto, double tasa, int plazo){
+        double factor = monto * (
+                                        tasa/
+                                (1 - (Math.pow( 1 - tasa, plazo * -1)))
+        );
+
+        return monto * factor;
+    }
+
+    /**
+     * Metodo para calcular el pago de una parcialidad basado en el metodo Aleman de amortización
+     * Formula
+     *          P =  C * r / (1 - (1 + r)^n ) )
+     * @param monto C representa el capital Inicial
+     * @param tasa r representa la tasa de interés
+     * @param plazo n representa el plazo
+     * @return P pago de la parcialidad
+     */
+    public static double parcialidad_Aleman(double monto, double tasa, int plazo){
+        return
+                (monto * tasa)/
+        (1 - (Math.pow(1 - tasa , plazo)));
+    }
+
+
+    public static Map<Integer, TablaAmortizacion> buildTablaAmortizacion(double monto, double tasa,int plazo,
+                                                                         CitiusCalculo strategy){
+        double pagoParcialidad = 0d;
+        if(strategy == CitiusCalculo.ALEMAN)
+            pagoParcialidad = parcialidad_Aleman(monto, tasa, plazo);
+        else
+            pagoParcialidad = parcialidad_Frances(monto, tasa, plazo);
+
+        int parcialidad = 1;
+        Map<Integer, TablaAmortizacion> amortizacionMap = new HashMap<>();
+        amortizacionMap = calcula(amortizacionMap, BigDecimal.valueOf(monto), BigDecimal.valueOf(tasa),
+                parcialidad, plazo,BigDecimal.valueOf(pagoParcialidad));
+
+        return amortizacionMap;
+    }
+    private static Map<Integer, TablaAmortizacion> calcula(Map<Integer, TablaAmortizacion> tablaAmortizacionMap,
+                                                     BigDecimal monto,
+                            BigDecimal tasa,
+                            int step, int plazo,
+                            BigDecimal pagoParcialidad){
+        Par<Integer, TablaAmortizacion> par = new Par<>(step, new TablaAmortizacion());
+        if(step <= plazo){
+            par.getSecond().setPeriodo(step);
+            par.getSecond().setPagoMensual(pagoParcialidad);
+            par.getSecond().setCapital(monto);
+            par.getSecond().setInteres(
+                    monto.multiply(tasa).setScale(2, RoundingMode.UP)
+            );
+            par.getSecond().setAmortizacion(
+                    pagoParcialidad.subtract(
+                            par.getSecond().getInteres()
+                    ).setScale(2, RoundingMode.UP)
+            );
+            tablaAmortizacionMap.put(par.getFirst(), par.getSecond());
+            step++;
+            return calcula(tablaAmortizacionMap, monto.subtract(
+                    par.getSecond().getAmortizacion()
+            ), tasa, step, plazo, pagoParcialidad
+            );
         }
-        if(next != null) {
-            next.setComprobante(getComprobante());
-            return next.realizarAccion(monto, fecha, periodo);
-        }
-        return monto;
+
+        return tablaAmortizacionMap;
     }
 }

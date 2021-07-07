@@ -679,15 +679,36 @@
 package org.alexismzt.engines.citius.pojo;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.alexismzt.engines.citius.handlers.exceptions.CargoNoInicializado;
+import org.alexismzt.engines.citius.helpers.TipoConcepto;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Data
 public class Periodo {
 
+    private int periodo;
+    private List<Movimiento> abonos = new ArrayList<>();
+    private List<Movimiento> cuotaMoratoria = new ArrayList<>();
+    private final Movimiento ordinario;
+
+    private BigDecimal pagoMensual = BigDecimal.ZERO;
     private BigDecimal pendienteOrdinario = BigDecimal.ZERO;
     private BigDecimal pendienteCuotaMora = BigDecimal.ZERO;
     private BigDecimal pendienteCapital = BigDecimal.ZERO;
+
+    private BigDecimal totalCapitalPagado;
+    private BigDecimal totalAportaciones;
+    private BigDecimal totalOrdinarioPagado;
+    private BigDecimal totalMoraPagado;
+    private BigDecimal aportacionesCapital;
+
+    TablaAmoritizacion tablaAmoritizacion;
 
     public BigDecimal getPendiente(){
 
@@ -698,4 +719,77 @@ public class Periodo {
         );
     }
 
+    public void refresh(){
+        if(ordinario.getCargo() == null)
+            throw new CargoNoInicializado();
+        double dCargoOrdinario = ordinario.getCargo().doubleValue();
+        double dCapitalPagado = abonos.stream().filter( x -> x.getTipoConcepto() == TipoConcepto.ABONO)
+                .mapToDouble( y -> y.getCapitalPago().doubleValue()).sum();
+        double dAportacionesPagadas = abonos.stream().filter( x -> x.getTipoConcepto() == TipoConcepto.APORTACION_CAPITAL)
+                .mapToDouble( y -> y.getCapitalPago().doubleValue()).sum();
+
+        double dOrdinarioPagado = abonos.stream().filter( x -> x.getTipoConcepto() == TipoConcepto.ABONO)
+                .mapToDouble( y -> y.getOrdinarioPago().doubleValue()).sum();
+
+        double dMoratorioPagado = abonos.stream().filter( x -> x.getTipoConcepto() == TipoConcepto.ABONO)
+                .mapToDouble( y -> y.getMoraPago().doubleValue()).sum();
+
+        double dCargoMoratorio = cuotaMoratoria.stream().mapToDouble(x-> x.getCargo().doubleValue()).sum();
+
+        double pendienteMensualidad = pagoMensual.doubleValue() - (dCapitalPagado + dOrdinarioPagado);
+        double dPendienteCapital = (pagoMensual.doubleValue()-dCargoOrdinario) - dCapitalPagado;
+
+        pendienteOrdinario = BigDecimal.valueOf(
+                (dCargoOrdinario - dOrdinarioPagado) <= 0 ? 0:(dCargoOrdinario - dOrdinarioPagado)
+        );
+        pendienteCapital = BigDecimal.valueOf(
+                dPendienteCapital <= 0 ? 0 : dPendienteCapital
+        );
+        pendienteCuotaMora = BigDecimal.valueOf(
+                (dCargoMoratorio - dMoratorioPagado) <= 0 ? 0 :(dCargoMoratorio - dMoratorioPagado)
+        );
+        aportacionesCapital = BigDecimal.valueOf(dAportacionesPagadas);
+
+    }
+
+    public Periodo() {
+        ordinario = new Movimiento();
+    }
+
+    public Periodo(BigDecimal pagoMensual,int periodo, List<Movimiento> movimientos) {
+        this.periodo = periodo;
+        this.pagoMensual = pagoMensual;
+        Movimiento ordinario = movimientos.stream().filter(
+                x -> x.getTipoConcepto() == TipoConcepto.INTERES_ORDINARIO
+                || x.getTipoConcepto() == TipoConcepto.INTERES_ORDINARIO_PROP
+        ).findFirst().orElse(null);
+        if(ordinario == null){
+            this.ordinario = new Movimiento();
+            this.ordinario.setTipoConcepto(TipoConcepto.INTERES_ORDINARIO);
+            this.ordinario.setCargo( null );
+        }
+        else this.ordinario = ordinario;
+
+        abonos = movimientos.stream().filter(
+                x -> (x.getTipoConcepto()
+                        == TipoConcepto.ABONO
+                        ||
+                        x.getTipoConcepto() == TipoConcepto.APORTACION_CAPITAL
+                )
+        ).collect(Collectors.toList());
+
+        cuotaMoratoria = movimientos.stream().filter(
+                x-> x.getTipoConcepto() == TipoConcepto.INTERES_MORATORIO
+                || x.getTipoConcepto() == TipoConcepto.MULTA
+                || x.getTipoConcepto() == TipoConcepto.COBRO_PENALIZACION_PRONTO
+        ).collect(Collectors.toList());
+    }
+
+    @Data
+    static class TablaAmoritizacion{
+        LocalDate fechaVencimiento;
+        BigDecimal pagoMensual;
+        BigDecimal interesOrdinario;
+        BigDecimal amortizacion;
+    }
 }

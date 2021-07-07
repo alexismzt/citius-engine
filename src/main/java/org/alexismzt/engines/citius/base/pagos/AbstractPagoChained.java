@@ -678,14 +678,13 @@
 
 package org.alexismzt.engines.citius.base.pagos;
 
-import org.alexismzt.engines.citius.PagoChained;
+import org.alexismzt.engines.citius.base.PagoChained;
 import org.alexismzt.engines.citius.handlers.Par;
 import org.alexismzt.engines.citius.handlers.exceptions.PagoChainedException;
 import org.alexismzt.engines.citius.pojo.CitiusComprobante;
 import org.alexismzt.engines.citius.pojo.Periodo;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDate;
 
 public class AbstractPagoChained implements PagoChained {

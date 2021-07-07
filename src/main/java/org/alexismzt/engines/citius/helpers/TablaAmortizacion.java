@@ -676,10 +676,28 @@
  *
  */
 
-package org.alexismzt.engines.citius;
+package org.alexismzt.engines.citius.helpers;
 
-public class CitiusEngineLib {
-    public static void main(String[] args) throws Exception {
-        throw new Exception("no esta implementado");
+import lombok.Data;
+
+import java.math.BigDecimal;
+
+@Data
+public class TablaAmortizacion {
+    int periodo;
+    BigDecimal pagoMensual;
+    BigDecimal interes;
+    BigDecimal amortizacion;
+    BigDecimal capital;
+
+    @Override
+    public String toString() {
+        return "TablaAmortizacion{" +
+                "periodo=" + periodo +
+                ", pagoMensual=" + pagoMensual +
+                ", interes=" + interes +
+                ", amortizacion=" + amortizacion +
+                ", capital=" + capital +
+                '}';
     }
 }

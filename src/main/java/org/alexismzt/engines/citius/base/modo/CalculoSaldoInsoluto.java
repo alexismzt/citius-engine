@@ -676,26 +676,34 @@
  *
  */
 
-package org.alexismzt.engines.citius.base.pagos;
+package org.alexismzt.engines.citius.base.modo;
 
-import org.alexismzt.engines.citius.base.PagoChained;
-import org.alexismzt.engines.citius.handlers.exceptions.PagoChainedException;
+import org.alexismzt.engines.citius.base.CitiusEngine;
+import org.alexismzt.engines.citius.base.CitiusEngineImpl;
 import org.alexismzt.engines.citius.pojo.Periodo;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 
-public class AportacionCapital extends AbstractPagoChained implements PagoChained {
+public class CalculoSaldoInsoluto extends CitiusEngineImpl implements CitiusEngine {
     @Override
-    public BigDecimal realizarAccion(BigDecimal monto, LocalDate fecha, Periodo periodo) throws PagoChainedException {
-        if(super.realizarAccion(monto, fecha, periodo).compareTo(BigDecimal.ZERO) > 0){
-            comprobantePago.setPagoCapital(monto);
-            monto = BigDecimal.ZERO;
-        }
-        if(next != null) {
-            next.setComprobante(getComprobante());
-            return next.realizarAccion(monto, fecha, periodo);
-        }
-        return monto;
+    public BigDecimal calcularInteresOrdinario(BigDecimal monto, Periodo periodo, LocalDate fecha, int dias) {
+        BigDecimal factor = scaled(monto.multiply(TASA_ORDINARIA));
+        if(dias != 0)
+            factor = factor.divide(BigDecimal.valueOf(30), RoundingMode.UP );
+
+        return scaled(factor.multiply(BigDecimal.valueOf(dias)));
+    }
+
+    @Override
+    public BigDecimal calcularCuotaMoratoria(BigDecimal monto, Periodo periodo, LocalDate fecha, int dias) {
+        if(usarCuota)
+            return FACTOR_MORATORIO;
+
+        BigDecimal factor = scaled(monto.multiply(FACTOR_MORATORIO));
+        if(dias != 0)
+            factor = factor.divide(BigDecimal.valueOf(30), RoundingMode.UP );
+        return scaled(factor.multiply(BigDecimal.valueOf(dias)));
     }
 }
