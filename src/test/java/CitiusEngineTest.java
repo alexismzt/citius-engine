@@ -680,19 +680,19 @@ import org.alexismzt.engines.citius.CitiusEngineFactory;
 import org.alexismzt.engines.citius.base.CitiusEngine;
 import org.alexismzt.engines.citius.helpers.CitiusCalculo;
 import org.alexismzt.engines.citius.helpers.FinantialHelper;
-import org.alexismzt.engines.citius.helpers.TablaAmortizacion;
-import org.alexismzt.engines.citius.pojo.config.ConfigEngine;
+import org.alexismzt.engines.citius.helpers.Amortizacion;
+import org.alexismzt.engines.citius.pojo.config.Prestamo;
 import org.junit.jupiter.api.Test;
 import java.util.Map;
 
 public class CitiusEngineTest {
     @Test
     void testEngine(){
-        ConfigEngine configEngine = new ConfigEngine();
+        Prestamo prestamo = new Prestamo();
 
         CitiusEngine engine = CitiusEngineFactory.getInstance(CitiusCalculo.FRANCES);
 
-        Map<Integer, TablaAmortizacion> tabla = FinantialHelper.buildTablaAmortizacion(
+        Map<Integer, Amortizacion> tabla = FinantialHelper.buildTablaAmortizacion(
                 60000, (1.5d*1.16d)/100d, 36, CitiusCalculo.FRANCES
         );
 

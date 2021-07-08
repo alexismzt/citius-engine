@@ -676,32 +676,100 @@
  *
  */
 
-package org.alexismzt.engines.citius.base.pagos;
+package org.alexismzt.engines.citius.pojo;
 
-import org.alexismzt.engines.citius.base.PagoChained;
-import org.alexismzt.engines.citius.handlers.Par;
-import org.alexismzt.engines.citius.handlers.exceptions.PagoChainedException;
-import org.alexismzt.engines.citius.pojo.Periodo;
+import lombok.Getter;
+import org.alexismzt.engines.citius.handlers.exceptions.ExistenCargosEnStream;
+import org.alexismzt.engines.citius.helpers.TipoConcepto;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
-public class PagoCuotaMoratoriaPendiente extends AbstractPagoChained implements PagoChained {
+abstract class PeriodoHelper {
+    static Predicate<Movimiento> esMenorFechaVencimiento(LocalDate fecha){
+        return (movimientoCuenta -> movimientoCuenta.getFecha().isBefore(fecha));
+    }
+    static Predicate<Movimiento> esIgualFechaVencimiento(LocalDate fecha){
+        return movimientoCuenta -> movimientoCuenta.getFecha().isEqual(fecha);
+    }
+    static Predicate<Movimiento> esMenorPeriodo(int periodo){
+        return movimientoCuenta -> movimientoCuenta.getPeriodo() < periodo;
+    }
+    static Predicate<Movimiento> esIgualPeriodo(int periodo){
+        return movimientoCuenta -> movimientoCuenta.getPeriodo() == periodo;
+    }
+    static Predicate<Movimiento> esMenorOIgualPeriodo(int periodo){
+        return esMenorPeriodo(periodo).or(esIgualPeriodo(periodo));
+    }
+    static Predicate<Movimiento> esMenorOIgualFecha(LocalDate fecha){
+        return esMenorFechaVencimiento(fecha).or(esIgualFechaVencimiento(fecha));
+    }
 
-    @Override
-    public BigDecimal realizarAccion(BigDecimal monto, LocalDate fecha, Periodo periodo) throws PagoChainedException {
-        if(super.realizarAccion(monto, fecha, periodo).compareTo(BigDecimal.ZERO) > 0) //boilerplate de inicialización
-        {
-            Par<BigDecimal, BigDecimal> parPago = evaluate(monto, periodo.getPendienteMoratorio());
-            if (parPago != null) {
-                comprobantePago.setPagoCuotaMoratoria(parPago.getFirst());
-                monto = parPago.getSecond();
-            }
+    static Predicate<Movimiento> esInteresOrdinario(){
+        return movimientoCuenta ->
+                movimientoCuenta.getTipoConcepto() == TipoConcepto.INTERES_ORDINARIO_PROP ||
+                        movimientoCuenta.getTipoConcepto() == TipoConcepto.INTERES_ORDINARIO;
+    }
+    static Predicate<Movimiento> esInteresMoratorio(){
+        return movimientoCuenta ->
+                movimientoCuenta.getTipoConcepto() == TipoConcepto.INTERES_MORATORIO;
+    }
+
+    static Predicate<Movimiento> esOtroCargo(){
+        return movimientoCuenta ->
+                movimientoCuenta.getTipoConcepto() == TipoConcepto.OTROS_CARGOS;
+    }
+
+    static Predicate<Movimiento> esCargo(){
+        return esInteresMoratorio()
+                .or(esInteresMoratorio())
+                .or(esOtroCargo());
+    }
+
+    static Predicate<Movimiento> esAbono(){
+        return movimientoCuenta -> movimientoCuenta.getTipoConcepto() == TipoConcepto.ABONO ||
+                movimientoCuenta.getTipoConcepto() == TipoConcepto.ABONO_ANTICIPADO ||
+                movimientoCuenta.getTipoConcepto() == TipoConcepto.ABONO_Y_CAPITAL ||
+                movimientoCuenta.getTipoConcepto() == TipoConcepto.APORTACION_CAPITAL;
+    }
+    static Predicate<Movimiento> abonoMenorIgualFechaPeriodo(LocalDate date, int periodo){
+        return esAbono()
+                .and(esMenorOIgualFecha(date))
+                .and(esMenorOIgualPeriodo(periodo));
+    }
+
+    static BigDecimal value(double d){
+        return BigDecimal.valueOf(d).setScale(2, RoundingMode.HALF_EVEN);
+    }
+
+    static BigDecimal sumatoriaCargo(Stream<Movimiento> s){
+        return value(s.mapToDouble(xx -> xx.getCargo().doubleValue()).sum());
+    }
+
+    @Getter
+    static class DetalleAbono{
+        BigDecimal capital;
+        BigDecimal ordinario;
+        BigDecimal moratorio;
+        BigDecimal otros;
+
+        private DetalleAbono(Stream<Movimiento> stream) {
+            long conteo = stream
+                    .filter(esCargo())
+                    .count();
+            if(conteo > 0)
+                throw new ExistenCargosEnStream();
+            capital = value(stream.mapToDouble(xx -> xx.getCapitalPago().doubleValue()).sum());
+            ordinario = value(stream.mapToDouble(xx -> xx.getOrdinarioPago().doubleValue()).sum());
+            moratorio = value(stream.mapToDouble(xx -> xx.getMoraPago().doubleValue()).sum());
+            otros = value(stream.mapToDouble(xx -> xx.getOtroPago().doubleValue()).sum());
         }
-        if(next != null) {
-            next.setComprobante(getComprobante());
-            return next.realizarAccion(monto, fecha, periodo);
+
+        static DetalleAbono getInstance(Stream<Movimiento> stream){
+            return new DetalleAbono(stream);
         }
-        return monto;
     }
 }

@@ -681,7 +681,7 @@ package org.alexismzt.engines.citius;
 import lombok.Data;
 import org.alexismzt.engines.citius.base.CitiusEngine;
 import org.alexismzt.engines.citius.pojo.Periodo;
-import org.alexismzt.engines.citius.pojo.config.ConfigEngine;
+import org.alexismzt.engines.citius.pojo.config.Prestamo;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -689,7 +689,7 @@ import java.util.Map;
 @Data
 public class Periodos {
     Map<Integer, Periodo> periodos = new HashMap<>();
-    ConfigEngine configuracion;
+    Prestamo configuracion;
     CitiusEngine engine;
 
 

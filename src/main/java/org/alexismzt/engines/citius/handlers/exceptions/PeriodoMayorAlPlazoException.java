@@ -676,17 +676,15 @@
  *
  */
 
-package org.alexismzt.engines.citius.pojo.config;
+package org.alexismzt.engines.citius.handlers.exceptions;
 
-import lombok.Data;
-
-import java.math.BigDecimal;
-
-@Data
-public final class ConfigEngine {
-    private BigDecimal montoPrestamo;
-    private BigDecimal tasaOrdinaria;
-    private boolean cuotaMoratoria;
-    private BigDecimal montoMoratorio;
-    private int plazo;
+public class PeriodoMayorAlPlazoException extends RuntimeException {
+    /**
+     * Constructs a new runtime exception with {@code null} as its
+     * detail message.  The cause is not initialized, and may subsequently be
+     * initialized by a call to {@link #initCause}.
+     */
+    public PeriodoMayorAlPlazoException() {
+        super("El periodo dado es mayor al plazo establecido");
+    }
 }

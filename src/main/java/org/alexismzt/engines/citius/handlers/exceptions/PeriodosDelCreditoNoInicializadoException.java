@@ -676,32 +676,15 @@
  *
  */
 
-package org.alexismzt.engines.citius.base.pagos;
+package org.alexismzt.engines.citius.handlers.exceptions;
 
-import org.alexismzt.engines.citius.base.PagoChained;
-import org.alexismzt.engines.citius.handlers.Par;
-import org.alexismzt.engines.citius.handlers.exceptions.PagoChainedException;
-import org.alexismzt.engines.citius.pojo.Periodo;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-
-public class PagoCuotaMoratoriaPendiente extends AbstractPagoChained implements PagoChained {
-
-    @Override
-    public BigDecimal realizarAccion(BigDecimal monto, LocalDate fecha, Periodo periodo) throws PagoChainedException {
-        if(super.realizarAccion(monto, fecha, periodo).compareTo(BigDecimal.ZERO) > 0) //boilerplate de inicialización
-        {
-            Par<BigDecimal, BigDecimal> parPago = evaluate(monto, periodo.getPendienteMoratorio());
-            if (parPago != null) {
-                comprobantePago.setPagoCuotaMoratoria(parPago.getFirst());
-                monto = parPago.getSecond();
-            }
-        }
-        if(next != null) {
-            next.setComprobante(getComprobante());
-            return next.realizarAccion(monto, fecha, periodo);
-        }
-        return monto;
+public class PeriodosDelCreditoNoInicializadoException extends RuntimeException {
+    /**
+     * Constructs a new runtime exception with {@code null} as its
+     * detail message.  The cause is not initialized, and may subsequently be
+     * initialized by a call to {@link #initCause}.
+     */
+    public PeriodosDelCreditoNoInicializadoException() {
+        super("No se han inicializado los peridos para usarse en CitiusEngine");
     }
 }

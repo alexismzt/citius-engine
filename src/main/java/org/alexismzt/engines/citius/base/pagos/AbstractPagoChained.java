@@ -687,12 +687,13 @@ import org.alexismzt.engines.citius.pojo.Periodo;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-public class AbstractPagoChained implements PagoChained {
+public abstract class AbstractPagoChained implements PagoChained {
     PagoChained next;
     CitiusComprobante comprobantePago;
     @Override
     public BigDecimal realizarAccion(BigDecimal monto, LocalDate fecha, Periodo periodo) throws PagoChainedException {
         comprobantePago = getComprobante();
+        periodo.refresh(fecha);
         if(monto.compareTo(BigDecimal.ZERO) <= 0 ||
                  periodo.getPendiente().compareTo(BigDecimal.ZERO) <= 0)
             return BigDecimal.ZERO;

@@ -682,8 +682,7 @@ import org.alexismzt.engines.citius.handlers.exceptions.PagoActionException;
 import org.alexismzt.engines.citius.pojo.CitiusComprobante;
 import org.alexismzt.engines.citius.pojo.PagoAction;
 import org.alexismzt.engines.citius.pojo.Periodo;
-import org.alexismzt.engines.citius.pojo.config.ConfigEngine;
-import org.alexismzt.engines.citius.helpers.CitiusCalculo;
+import org.alexismzt.engines.citius.pojo.config.Prestamo;
 import org.alexismzt.engines.citius.handlers.exceptions.CitiusGeneralException;
 
 
@@ -696,30 +695,16 @@ public interface CitiusEngine {
      * Se establece la configuración inicial para ejecutar el motor
      * @param config Configuración
      */
-    void configurar(ConfigEngine config);
-
+    void configurar(Prestamo config);
     /**
      * Obtener la configuracion actual del motor
-     * @return instancia de ConfigEngine
+     * @return instancia de Prestamo
      */
-    ConfigEngine getConfiguracion();
+    Prestamo getConfiguracion();
 
-    /**
-     * Ejecuta los calculos segun la configuración dada
-     * @param fecha fecha de calculo
-     * @throws CitiusGeneralException se detecto un error irrecuperable en el calculo
-     */
-    void run(LocalDate fecha) throws CitiusGeneralException;
+    BigDecimal calcularInteresOrdinario(BigDecimal monto, Periodo periodo, LocalDate fecha, int dias);
+    BigDecimal calcularCuotaMoratoria(BigDecimal monto, Periodo periodo, LocalDate fecha, int dias);
 
-    /**
-     *
-     * @param pagoAction configuración del pago a realizar
-     * @return un comprobante de pago
-     * @throws PagoActionException Retorna si existe algun error al momento de realizar el pago
-     */
-    CitiusComprobante realizarPago(PagoAction pagoAction) throws PagoActionException;
-
-    BigDecimal calcularInteresOrdinario(final BigDecimal monto, final Periodo periodo, final LocalDate fecha, int dias);
-    BigDecimal calcularCuotaMoratoria(final BigDecimal monto, final Periodo periodo, final LocalDate fecha, int dias);
+    boolean executeEngine(LocalDate fecha);
 
 }

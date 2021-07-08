@@ -690,6 +690,7 @@ import java.math.MathContext;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.SortedMap;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -728,16 +729,9 @@ public class TestPagoChained {
         BigDecimal montoPago = BigDecimal.valueOf(2500);
         LocalDate fecha = LocalDate.now();
         Periodo periodo1 = new Periodo();
-        periodo1.setPendienteCapital(BigDecimal.valueOf(1900.02));
-        periodo1.setPendienteOrdinario(BigDecimal.valueOf(1800.36));
-        periodo1.setPendienteCuotaMora(BigDecimal.valueOf(26.22));
         periodos.add(periodo1);
 
         Periodo periodo2 = new Periodo();
-        periodo2.setPendienteCapital(BigDecimal.valueOf(100.2));
-        periodo2.setPendienteOrdinario(BigDecimal.valueOf(20.5));
-        periodo2.setPendienteCuotaMora(BigDecimal.valueOf(0));
-
         periodos.add(periodo2);
 
         CitiusComprobante comprobante = new CitiusComprobante();
@@ -763,5 +757,24 @@ public class TestPagoChained {
         System.out.println(comprobante.toString());
         System.out.println("Resto: " + bigDecimalAtomicReference.get());
         assertEquals(0, montoPago.compareTo(comprobante.getTotalPagado()));
+    }
+
+    @Test
+    void testBigDecimalVsFlotantes(){
+        double d0 = 0.1, d1 = 0.2;
+        float f0 = (float) 0.1, f1 = (float)0.2;
+
+        BigDecimal bd0 = BigDecimal.valueOf(0.1);
+        BigDecimal bd1 = BigDecimal.valueOf(0.2);
+
+        System.out.println("Double = " + (d0+d1));
+        System.out.println("Float = " + (f0+f1));
+        System.out.println("BigDecimal = " + (bd0.add(bd1)));
+
+        System.out.println(0.3 == (d0+d1));
+        System.out.println(0.3 == (f0+f1));
+        System.out.println(BigDecimal.valueOf(0.3).compareTo(bd0.add(bd1)) == 0);
+
+
     }
 }

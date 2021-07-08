@@ -676,34 +676,86 @@
  *
  */
 
-package org.alexismzt.engines.citius.helpers;
+package org.alexismzt.engines.citius.pojo.config;
 
 import lombok.Data;
+import org.alexismzt.engines.citius.handlers.exceptions.NoExisteElperiodoException;
+import org.alexismzt.engines.citius.handlers.exceptions.PeriodoMayorAlPlazoException;
+import org.alexismzt.engines.citius.handlers.exceptions.PeriodosDelCreditoNoInicializadoException;
+import org.alexismzt.engines.citius.pojo.Periodo;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.util.Map;
+import java.util.function.Predicate;
 
 @Data
-public class TablaAmortizacion {
-    int periodo;
-    BigDecimal pagoMensual;
-    BigDecimal interes;
-    BigDecimal amortizacion;
-    BigDecimal capital;
+public final class Prestamo {
+    private BigDecimal montoPrestamo;
+    private BigDecimal tasaOrdinaria;
+    private boolean modoFactor;
+    private BigDecimal factorMoratorio;
+    private int plazo;
+    private Map<Integer, Periodo> periodos;
 
-    BigDecimal getSaldoFinal(){
-        return capital.subtract(amortizacion).setScale(2, RoundingMode.HALF_EVEN);
+
+    public BigDecimal getSaldoInsoluto(LocalDate fecha){
+        refreshPeriodos(fecha);
+        return montoPrestamo.subtract(
+                getTotalAbonos(fecha)
+        );
     }
 
-    @Override
-    public String toString() {
-        return "TablaAmortizacion{" +
-                "periodo=" + periodo +
-                ", pagoMensual=" + pagoMensual +
-                ", interes=" + interes +
-                ", amortizacion=" + amortizacion +
-                ", capital=" + capital +
-                ", Saldo Final: " + getSaldoFinal()+
-                '}';
+    public double getPendiente(LocalDate fecha){
+        refreshPeriodos(fecha);
+        return
+                periodos
+                        .values()
+                        .stream()
+                        .filter(
+                                esMenorOIgual(fecha)
+                        ).mapToDouble(x-> x.getPendiente().doubleValue()).sum();
+    }
+
+    public BigDecimal getTotalAbonos(LocalDate fecha){
+        return BigDecimal.valueOf(
+        periodos.values()
+                .stream()
+                .filter(esMenorOIgual(fecha))
+                .mapToDouble(
+                        x-> x.getTotalAportaciones().doubleValue()
+                            + x.getTotalAportaciones().doubleValue()
+                ).sum());
+    }
+
+    public Periodo getPeriodo(int periodo){
+        checkPeriodo(periodo);
+        return periodos.get(periodo);
+    }
+
+    void checkPeriodo(int p) throws PeriodoMayorAlPlazoException, PeriodosDelCreditoNoInicializadoException,
+            NoExisteElperiodoException{
+        if (p > plazo)
+            throw new PeriodoMayorAlPlazoException();
+        if(periodos.isEmpty())
+            throw new PeriodosDelCreditoNoInicializadoException();
+        if(!periodos.containsKey(p))
+            throw new NoExisteElperiodoException();
+    }
+
+    void refreshPeriodos(LocalDate fecha){
+        periodos.values().forEach(
+                x -> x.refresh(fecha)
+        );
+    }
+
+    Predicate<Periodo> esMenor(LocalDate fecha){
+        return periodo -> periodo.getFechaVencimiento(). isBefore(fecha);
+    }
+    Predicate<Periodo> esIgual(LocalDate fecha){
+        return periodo -> periodo.getFechaVencimiento(). isEqual(fecha);
+    }
+    Predicate<Periodo> esMenorOIgual(LocalDate fecha){
+        return esMenor(fecha).or(esIgual(fecha));
     }
 }

@@ -679,4 +679,17 @@
 package org.alexismzt.engines.citius.helpers;
 
 public enum TipoInstrumento {
+    NOT_INIT,
+    EFECTIVO,
+    TRANSFERENCIA,
+    CHEQUES_DE_VIAJERO,
+    ORO_O_PLATINO_AMONEDADOS,
+    PLATA_AMONEDADA,
+    DERECHOS,
+    CHEQUES,
+    BIENES,
+    CHEQUE_DE_CAJA,
+    DOCUMENTOS_O_VALORES,
+    DIVISAS,
+    BIENES_O_MERCANCIAS
 }

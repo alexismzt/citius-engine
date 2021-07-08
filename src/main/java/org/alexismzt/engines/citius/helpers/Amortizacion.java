@@ -676,32 +676,34 @@
  *
  */
 
-package org.alexismzt.engines.citius.base.pagos;
+package org.alexismzt.engines.citius.helpers;
 
-import org.alexismzt.engines.citius.base.PagoChained;
-import org.alexismzt.engines.citius.handlers.Par;
-import org.alexismzt.engines.citius.handlers.exceptions.PagoChainedException;
-import org.alexismzt.engines.citius.pojo.Periodo;
+import lombok.Data;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.math.RoundingMode;
 
-public class PagoCuotaMoratoriaPendiente extends AbstractPagoChained implements PagoChained {
+@Data
+public class Amortizacion {
+    int periodo;
+    BigDecimal pagoMensual;
+    BigDecimal interes;
+    BigDecimal amortizacion;
+    BigDecimal capital;
+
+    BigDecimal getSaldoFinal(){
+        return capital.subtract(amortizacion).setScale(2, RoundingMode.HALF_EVEN);
+    }
 
     @Override
-    public BigDecimal realizarAccion(BigDecimal monto, LocalDate fecha, Periodo periodo) throws PagoChainedException {
-        if(super.realizarAccion(monto, fecha, periodo).compareTo(BigDecimal.ZERO) > 0) //boilerplate de inicialización
-        {
-            Par<BigDecimal, BigDecimal> parPago = evaluate(monto, periodo.getPendienteMoratorio());
-            if (parPago != null) {
-                comprobantePago.setPagoCuotaMoratoria(parPago.getFirst());
-                monto = parPago.getSecond();
-            }
-        }
-        if(next != null) {
-            next.setComprobante(getComprobante());
-            return next.realizarAccion(monto, fecha, periodo);
-        }
-        return monto;
+    public String toString() {
+        return "Amortizacion{" +
+                "periodo=" + periodo +
+                ", pagoMensual=" + pagoMensual +
+                ", interes=" + interes +
+                ", amortizacion=" + amortizacion +
+                ", capital=" + capital +
+                ", Saldo Final: " + getSaldoFinal()+
+                '}';
     }
 }

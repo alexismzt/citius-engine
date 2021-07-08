@@ -687,21 +687,27 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 
 public class CalculoSaldoInsoluto extends CitiusEngineImpl implements CitiusEngine {
+
     @Override
     public BigDecimal calcularInteresOrdinario(BigDecimal monto, Periodo periodo, LocalDate fecha, int dias) {
-        BigDecimal factor = scaled(monto.multiply(TASA_ORDINARIA));
+        BigDecimal factor = scaled(monto.multiply(prestamo.getTasaOrdinaria()));
         if(dias != 0)
             factor = factor.divide(BigDecimal.valueOf(30), RoundingMode.UP );
-
         return scaled(factor.multiply(BigDecimal.valueOf(dias)));
     }
 
     @Override
-    public BigDecimal calcularCuotaMoratoria(BigDecimal monto, Periodo periodo, LocalDate fecha, int dias) {
-        if(usarCuota)
-            return FACTOR_MORATORIO;
+    public boolean executeEngine(LocalDate fecha) {
 
-        BigDecimal factor = scaled(monto.multiply(FACTOR_MORATORIO));
+        return false;
+    }
+
+    @Override
+    public BigDecimal calcularCuotaMoratoria(BigDecimal monto, Periodo periodo, LocalDate fecha, int dias) {
+        if(prestamo.isModoFactor())
+            return prestamo.getFactorMoratorio();
+
+        BigDecimal factor = scaled(monto.multiply(prestamo.getFactorMoratorio()));
         if(dias != 0)
             factor = factor.divide(BigDecimal.valueOf(30), RoundingMode.UP );
         return scaled(factor.multiply(BigDecimal.valueOf(dias)));

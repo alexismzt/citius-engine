@@ -682,7 +682,7 @@ import org.alexismzt.engines.citius.handlers.exceptions.CitiusGeneralException;
 import org.alexismzt.engines.citius.handlers.exceptions.PagoActionException;
 import org.alexismzt.engines.citius.pojo.CitiusComprobante;
 import org.alexismzt.engines.citius.pojo.PagoAction;
-import org.alexismzt.engines.citius.pojo.config.ConfigEngine;
+import org.alexismzt.engines.citius.pojo.config.Prestamo;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -695,9 +695,7 @@ import java.time.LocalDate;
  */
 public abstract class CitiusEngineImpl implements CitiusEngine {
 
-    protected BigDecimal TASA_ORDINARIA = BigDecimal.ZERO;
-    protected BigDecimal FACTOR_MORATORIO = BigDecimal.ZERO;
-    protected boolean usarCuota = false;
+    protected Prestamo prestamo;
 
     /**
      * Se establece la configuración inicial para ejecutar el motor
@@ -705,40 +703,21 @@ public abstract class CitiusEngineImpl implements CitiusEngine {
      * @param config Configuración
      */
     @Override
-    public void configurar(ConfigEngine config) {
-
+    public void configurar(Prestamo config) {
+        prestamo = config;
     }
 
     /**
      * Obtener la configuracion actual del motor
      *
-     * @return instancia de ConfigEngine
+     * @return instancia de Prestamo
      */
     @Override
-    public ConfigEngine getConfiguracion() {
-        return null;
+    public Prestamo getConfiguracion() {
+        return prestamo;
     }
 
-    /**
-     * Ejecuta los calculos segun la configuración dada
-     *
-     * @param fecha fecha de calculo
-     * @throws CitiusGeneralException se detecto un error irrecuperable en el calculo
-     */
-    @Override
-    public void run(LocalDate fecha) throws CitiusGeneralException {
 
-    }
-
-    /**
-     * @param pagoAction configuración del pago a realizar
-     * @return un comprobante de pago
-     * @throws PagoActionException Retorna si existe algun error al momento de realizar el pago
-     */
-    @Override
-    public CitiusComprobante realizarPago(PagoAction pagoAction) throws PagoActionException {
-        return null;
-    }
 
     protected BigDecimal scaled(BigDecimal value){
         return value.setScale(2, RoundingMode.UP);

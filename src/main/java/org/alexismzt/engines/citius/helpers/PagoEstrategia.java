@@ -676,14 +676,12 @@
  *
  */
 
-package org.alexismzt.engines.citius.pojo.config;
+package org.alexismzt.engines.citius.helpers;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-
-@Getter
-@AllArgsConstructor
-public class CitiusChildConfig {
-    final int diasPeriodo;
-
+public enum PagoEstrategia {
+    NORMAL,
+    ADELANTAR_MENSUALIDADES,
+    ABONO_A_CAPITAL,
+    ABONAR_A_CAPITAL_Y_LIQUIDAR,
+    ABONAR_A_CAPITAL_Y_AJUSTAR_PENDIENTE
 }

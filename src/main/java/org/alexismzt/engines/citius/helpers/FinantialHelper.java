@@ -731,8 +731,8 @@ public final class FinantialHelper {
     }
 
 
-    public static Map<Integer, TablaAmortizacion> buildTablaAmortizacion(double monto, double tasa,int plazo,
-                                                                         CitiusCalculo strategy){
+    public static Map<Integer, Amortizacion> buildTablaAmortizacion(double monto, double tasa, int plazo,
+                                                                    CitiusCalculo strategy){
         double pagoParcialidad;
         if(strategy == CitiusCalculo.ALEMAN)
             pagoParcialidad = parcialidad_Aleman(monto, tasa, plazo);
@@ -740,19 +740,19 @@ public final class FinantialHelper {
             pagoParcialidad = parcialidad_Frances(monto, tasa, plazo);
 
         int parcialidad = 1;
-        Map<Integer, TablaAmortizacion> amortizacionMap = new HashMap<>();
+        Map<Integer, Amortizacion> amortizacionMap = new HashMap<>();
         amortizacionMap = calcula(amortizacionMap, BigDecimal.valueOf(monto), BigDecimal.valueOf(tasa),
                 parcialidad, plazo,BigDecimal.valueOf(pagoParcialidad));
 
         return amortizacionMap;
     }
-    private static Map<Integer, TablaAmortizacion> calcula(
-                            final Map<Integer, TablaAmortizacion> tablaAmortizacionMap,
+    private static Map<Integer, Amortizacion> calcula(
+                            final Map<Integer, Amortizacion> tablaAmortizacionMap,
                             BigDecimal monto,
                             final BigDecimal tasa,
                             int step, final int plazo,
                             BigDecimal pagoParcialidad){
-        Par<Integer, TablaAmortizacion> par = new Par<>(step, new TablaAmortizacion());
+        Par<Integer, Amortizacion> par = new Par<>(step, new Amortizacion());
 
         if(step == plazo)
             pagoParcialidad = BigDecimal.valueOf(
