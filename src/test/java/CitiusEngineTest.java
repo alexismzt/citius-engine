@@ -683,8 +683,6 @@ import org.alexismzt.engines.citius.helpers.FinantialHelper;
 import org.alexismzt.engines.citius.helpers.TablaAmortizacion;
 import org.alexismzt.engines.citius.pojo.config.ConfigEngine;
 import org.junit.jupiter.api.Test;
-
-import java.math.BigDecimal;
 import java.util.Map;
 
 public class CitiusEngineTest {
@@ -695,10 +693,11 @@ public class CitiusEngineTest {
         CitiusEngine engine = CitiusEngineFactory.getInstance(CitiusCalculo.FRANCES);
 
         Map<Integer, TablaAmortizacion> tabla = FinantialHelper.buildTablaAmortizacion(
-                60000, 0.0174, 36, CitiusCalculo.FRANCES
+                60000, (1.5d*1.16d)/100d, 36, CitiusCalculo.FRANCES
         );
 
-        tabla.forEach((key, value) -> System.out.println("Key: " + key + "Value" + value.toString()));
-
+        tabla.forEach((key, value) ->
+            System.out.println("Key: " + key + " Value: " + value.toString())
+        );
     }
 }

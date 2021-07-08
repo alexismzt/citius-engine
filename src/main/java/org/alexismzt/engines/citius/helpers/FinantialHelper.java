@@ -696,13 +696,18 @@ public final class FinantialHelper {
      * @param plazo n representa el plazo
      * @return P pago de la parcialidad
      */
-    public static double parcialidad_Frances(double monto, double tasa, int plazo){
+    public static double parcialidad_Frances(
+            final double monto,
+            final double tasa,
+            int plazo){
+        if(plazo == 0)
+            plazo = 1;
         double factor = monto * (
                                         tasa/
-                                (1 - (Math.pow( 1 - tasa, plazo * -1)))
+                                (1 - (Math.pow( 1 + tasa, plazo * -1)))
         );
 
-        return monto * factor;
+        return Math.round(factor*100.0d)/100.0d;
     }
 
     /**
@@ -714,7 +719,12 @@ public final class FinantialHelper {
      * @param plazo n representa el plazo
      * @return P pago de la parcialidad
      */
-    public static double parcialidad_Aleman(double monto, double tasa, int plazo){
+    public static double parcialidad_Aleman(
+            final double monto,
+            final double tasa,
+            int plazo){
+        if(plazo == 0)
+            plazo = 1;
         return
                 (monto * tasa)/
         (1 - (Math.pow(1 - tasa , plazo)));
@@ -736,23 +746,29 @@ public final class FinantialHelper {
 
         return amortizacionMap;
     }
-    private static Map<Integer, TablaAmortizacion> calcula(Map<Integer, TablaAmortizacion> tablaAmortizacionMap,
-                                                     BigDecimal monto,
-                            BigDecimal tasa,
-                            int step, int plazo,
+    private static Map<Integer, TablaAmortizacion> calcula(
+                            final Map<Integer, TablaAmortizacion> tablaAmortizacionMap,
+                            BigDecimal monto,
+                            final BigDecimal tasa,
+                            int step, final int plazo,
                             BigDecimal pagoParcialidad){
         Par<Integer, TablaAmortizacion> par = new Par<>(step, new TablaAmortizacion());
+
+        if(step == plazo)
+            pagoParcialidad = BigDecimal.valueOf(
+                    parcialidad_Frances(monto.doubleValue(), tasa.doubleValue(), 1)
+            );
         if(step <= plazo){
             par.getSecond().setPeriodo(step);
             par.getSecond().setPagoMensual(pagoParcialidad);
             par.getSecond().setCapital(monto);
             par.getSecond().setInteres(
-                    monto.multiply(tasa).setScale(2, RoundingMode.UP)
+                    monto.multiply(tasa).setScale(2, RoundingMode.HALF_EVEN)
             );
             par.getSecond().setAmortizacion(
                     pagoParcialidad.subtract(
                             par.getSecond().getInteres()
-                    ).setScale(2, RoundingMode.UP)
+                    )
             );
             tablaAmortizacionMap.put(par.getFirst(), par.getSecond());
             step++;

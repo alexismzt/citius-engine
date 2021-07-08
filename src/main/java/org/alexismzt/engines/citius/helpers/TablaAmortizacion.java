@@ -681,6 +681,7 @@ package org.alexismzt.engines.citius.helpers;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 @Data
 public class TablaAmortizacion {
@@ -690,6 +691,10 @@ public class TablaAmortizacion {
     BigDecimal amortizacion;
     BigDecimal capital;
 
+    BigDecimal getSaldoFinal(){
+        return capital.subtract(amortizacion).setScale(2, RoundingMode.HALF_EVEN);
+    }
+
     @Override
     public String toString() {
         return "TablaAmortizacion{" +
@@ -698,6 +703,7 @@ public class TablaAmortizacion {
                 ", interes=" + interes +
                 ", amortizacion=" + amortizacion +
                 ", capital=" + capital +
+                ", Saldo Final: " + getSaldoFinal()+
                 '}';
     }
 }
