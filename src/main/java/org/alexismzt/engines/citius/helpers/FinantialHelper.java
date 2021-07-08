@@ -733,7 +733,7 @@ public final class FinantialHelper {
 
     public static Map<Integer, TablaAmortizacion> buildTablaAmortizacion(double monto, double tasa,int plazo,
                                                                          CitiusCalculo strategy){
-        double pagoParcialidad = 0d;
+        double pagoParcialidad;
         if(strategy == CitiusCalculo.ALEMAN)
             pagoParcialidad = parcialidad_Aleman(monto, tasa, plazo);
         else
