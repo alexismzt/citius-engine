@@ -717,7 +717,19 @@ public abstract class CitiusEngineImpl implements CitiusEngine {
         return prestamo;
     }
 
+    @Override
+    public boolean executeEngine(LocalDate fecha) {
 
+        prestamo.getPeriodos()
+                .forEach((key, value) ->{
+                    System.out.println("calculando periodo " + key);
+                    if(value.getPendiente().compareTo(BigDecimal.ZERO) > 0){
+                        BigDecimal pendienteMes = value.getPendienteMensualidad();
+                    }
+                });
+
+        return false;
+    }
 
     protected BigDecimal scaled(BigDecimal value){
         return value.setScale(2, RoundingMode.UP);

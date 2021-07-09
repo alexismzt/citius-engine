@@ -683,6 +683,8 @@ import lombok.Data;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
+import static org.alexismzt.engines.citius.helpers.MathUtils.DOS_DECIMALES;
+
 @Data
 public class Amortizacion {
     int periodo;
@@ -692,7 +694,7 @@ public class Amortizacion {
     BigDecimal capital;
 
     BigDecimal getSaldoFinal(){
-        return capital.subtract(amortizacion).setScale(2, RoundingMode.HALF_EVEN);
+        return capital.subtract(amortizacion).round(DOS_DECIMALES);
     }
 
     @Override

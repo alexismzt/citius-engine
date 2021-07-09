@@ -685,6 +685,8 @@ import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.alexismzt.engines.citius.helpers.MathUtils.DOS_DECIMALES;
+
 public final class FinantialHelper {
 
     /**
@@ -763,7 +765,7 @@ public final class FinantialHelper {
             par.getSecond().setPagoMensual(pagoParcialidad);
             par.getSecond().setCapital(monto);
             par.getSecond().setInteres(
-                    monto.multiply(tasa).setScale(2, RoundingMode.HALF_EVEN)
+                    monto.multiply(tasa).round(DOS_DECIMALES)
             );
             par.getSecond().setAmortizacion(
                     pagoParcialidad.subtract(
@@ -774,7 +776,7 @@ public final class FinantialHelper {
             step++;
             return calcula(tablaAmortizacionMap, monto.subtract(
                     par.getSecond().getAmortizacion()
-            ), tasa, step, plazo, pagoParcialidad
+            ).round(DOS_DECIMALES), tasa, step, plazo, pagoParcialidad
             );
         }
 

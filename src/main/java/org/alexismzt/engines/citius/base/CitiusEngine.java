@@ -702,8 +702,8 @@ public interface CitiusEngine {
      */
     Prestamo getConfiguracion();
 
-    BigDecimal calcularInteresOrdinario(BigDecimal monto, Periodo periodo, LocalDate fecha, int dias);
-    BigDecimal calcularCuotaMoratoria(BigDecimal monto, Periodo periodo, LocalDate fecha, int dias);
+    BigDecimal calcularInteresOrdinario(BigDecimal monto, int periodo, LocalDate fecha, int dias);
+    BigDecimal calcularCuotaMoratoria(BigDecimal monto, int periodo, LocalDate fecha, int dias);
 
     boolean executeEngine(LocalDate fecha);
 

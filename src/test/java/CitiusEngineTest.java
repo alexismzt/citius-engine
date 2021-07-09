@@ -690,6 +690,8 @@ public class CitiusEngineTest {
     void testEngine(){
         Prestamo prestamo = new Prestamo();
 
+        System.out.println();
+
         CitiusEngine engine = CitiusEngineFactory.getInstance(CitiusCalculo.FRANCES);
 
         Map<Integer, Amortizacion> tabla = FinantialHelper.buildTablaAmortizacion(
@@ -701,3 +703,4 @@ public class CitiusEngineTest {
         );
     }
 }
+

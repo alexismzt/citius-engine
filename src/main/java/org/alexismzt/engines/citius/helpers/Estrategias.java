@@ -676,149 +676,31 @@
  *
  */
 
-package org.alexismzt.engines.citius.pojo;
+package org.alexismzt.engines.citius.helpers;
 
-import lombok.Data;
-import org.alexismzt.engines.citius.handlers.exceptions.CargoNoInicializado;
-import org.alexismzt.engines.citius.helpers.Amortizacion;
-import org.alexismzt.engines.citius.helpers.TipoConcepto;
+import org.alexismzt.engines.citius.base.PagoChained;
+import org.alexismzt.engines.citius.base.pagos.PagoCapitalPendiente;
+import org.alexismzt.engines.citius.base.pagos.PagoCuotaMoratoriaPendiente;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
+public class Estrategias {
+    public static final Strategy<PagoEstrategia, Integer, PagoChained> NORMAL;
 
-import static org.alexismzt.engines.citius.helpers.MathUtils.DOS_DECIMALES;
-import static org.alexismzt.engines.citius.pojo.PeriodoHelper.*;
+    static {
 
-@Data
-public class Periodo{
+        NORMAL = new Strategy<>();
+        NORMAL.StrategyType = PagoEstrategia.NORMAL;
+        NORMAL.Strategy.put(1, new PagoCuotaMoratoriaPendiente());
+        NORMAL.Strategy.put(2, new PagoCuotaMoratoriaPendiente());
+        NORMAL.Strategy.put(3, new PagoCapitalPendiente());
 
-    private int periodo;
-    private LocalDate fechaVencimiento;
-    private List<Movimiento> abonosList = new ArrayList<>();
-    private List<Movimiento> cargosMoraList = new ArrayList<>();
-    private List<Movimiento> cargoOtrosList = new ArrayList<>();
-    private List<Movimiento> aportacionCapitalList = new ArrayList<>();;
-    private final Movimiento ordinario;
+        NORMAL.Strategy.get(1).setNext(
+                NORMAL.Strategy.get(2)
+        );
 
-    private BigDecimal pagoMensual = BigDecimal.ZERO;
-    private BigDecimal cargoOrdinario = BigDecimal.ZERO;
-    private BigDecimal cargoMora = BigDecimal.ZERO;
-    private BigDecimal cargoOtros = BigDecimal.ZERO;
+        NORMAL.Strategy.get(2).setNext(
+                NORMAL.Strategy.get(3)
+        );
 
-    private BigDecimal totalCapitalPagado;
-    private BigDecimal totalAportaciones;
-    private BigDecimal totalOrdinarioPagado;
-    private BigDecimal totalMoraPagado;
-    private BigDecimal totalOtrosPago;
-    private BigDecimal aportacionesCapital;
-
-    Amortizacion amortizacion;
-
-    public BigDecimal getPendienteOrdinario(){
-        return cargoOrdinario.subtract(totalOrdinarioPagado);
-    }
-
-    public BigDecimal getPendienteMoratorio(){
-        return cargoOrdinario.subtract(totalMoraPagado);
-    }
-
-    public BigDecimal getPendienteOtros(){
-        return cargoOtros.subtract(totalOtrosPago);
-    }
-
-    public BigDecimal getPendienteCapital(){
-        BigDecimal value = pagoMensual.subtract(cargoOrdinario)
-                .subtract(totalCapitalPagado);
-        return value.compareTo(BigDecimal.ZERO) <= 0 ? BigDecimal.ZERO : value;
-    }
-
-    public BigDecimal getPendiente(){
-        return getPendienteOrdinario().add(
-                getPendienteMoratorio())
-                .add(getPendienteCapital())
-                .add(getPendienteOtros());
-    }
-
-    public void refresh(LocalDate fecha){
-        if(ordinario.getCargo() == null)
-            throw new CargoNoInicializado();
-        cargoOrdinario = ordinario.getCargo();
-        cargoMora = sumatoriaCargo(
-                cargosMoraList
-                        .stream()
-                        .filter(esMenorOIgualFecha(fecha)));
-        cargoOtros = sumatoriaCargo(
-                cargoOtrosList
-                        .stream()
-                        .filter(esMenorOIgualFecha(fecha)));
-        DetalleAbono detalleAbono =
-                DetalleAbono.getInstance(
-                        abonosList
-                                .stream()
-                                .filter(esMenorOIgualFecha(fecha)));
-
-        totalCapitalPagado = detalleAbono.getCapital();
-        totalOrdinarioPagado = detalleAbono.getOrdinario();
-        totalMoraPagado = detalleAbono.getMoratorio();
-        totalOtrosPago = detalleAbono.getOtros();
-    }
-
-    public void addMovimiento(Movimiento movimiento) {
-        switch (movimiento.getTipoConcepto()){
-            case ABONO_Y_CAPITAL:
-            case ABONO_ANTICIPADO:
-            case ABONO:
-                abonosList.add(movimiento);
-                break;
-            case INTERES_MORATORIO:
-                cargosMoraList.add(movimiento);
-                break;
-            case APORTACION_CAPITAL:
-                aportacionCapitalList.add(movimiento);
-                break;
-            case OTROS_CARGOS:
-                cargoOtrosList.add(movimiento);
-                break;
-        }
-    }
-
-    public BigDecimal getPendienteMensualidad() {
-        float pendiente = pagoMensual.subtract(
-                getPendienteOrdinario().add(getPendienteCapital())
-        ).round(DOS_DECIMALES).floatValue();
-        if(pendiente <= 0)
-            return BigDecimal.ZERO;
-        else
-            return BigDecimal.valueOf(pendiente);
-    }
-
-    public Periodo() {
-        ordinario = new Movimiento();
-    }
-
-    public Periodo(BigDecimal pagoMensual,int periodo, List<Movimiento> movimientos) {
-        this.periodo = periodo;
-        this.pagoMensual = pagoMensual;
-        Movimiento ordinario =
-                movimientos.stream()
-                        .filter(esInteresOrdinario())
-                        .findFirst()
-                        .orElse(null);
-
-        if(ordinario == null){
-            this.ordinario = new Movimiento();
-            this.ordinario.setTipoConcepto(TipoConcepto.INTERES_ORDINARIO);
-            this.ordinario.setCargo( null );
-        }
-        else this.ordinario = ordinario;
-
-        abonosList = movimientos.stream().filter(esAbono()).collect(Collectors.toList());
-        aportacionCapitalList = movimientos.stream().filter(esAportacion()).collect(Collectors.toList());
-        cargosMoraList = movimientos.stream().filter(esInteresMoratorio()).collect(Collectors.toList());
-        cargoOtrosList = movimientos.stream().filter(esOtroCargo()).collect(Collectors.toList());
+        NORMAL.Strategy.get(3).setNext(null);
     }
 }

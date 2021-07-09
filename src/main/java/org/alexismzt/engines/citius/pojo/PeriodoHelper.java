@@ -688,6 +688,8 @@ import java.time.LocalDate;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import static org.alexismzt.engines.citius.helpers.MathUtils.DOS_DECIMALES;
+
 abstract class PeriodoHelper {
     static Predicate<Movimiento> esMenorFechaVencimiento(LocalDate fecha){
         return (movimientoCuenta -> movimientoCuenta.getFecha().isBefore(fecha));
@@ -732,9 +734,14 @@ abstract class PeriodoHelper {
     static Predicate<Movimiento> esAbono(){
         return movimientoCuenta -> movimientoCuenta.getTipoConcepto() == TipoConcepto.ABONO ||
                 movimientoCuenta.getTipoConcepto() == TipoConcepto.ABONO_ANTICIPADO ||
-                movimientoCuenta.getTipoConcepto() == TipoConcepto.ABONO_Y_CAPITAL ||
-                movimientoCuenta.getTipoConcepto() == TipoConcepto.APORTACION_CAPITAL;
+                movimientoCuenta.getTipoConcepto() == TipoConcepto.ABONO_Y_CAPITAL
+                ;
     }
+
+    static Predicate<Movimiento> esAportacion(){
+        return movimiento -> movimiento.getTipoConcepto() == TipoConcepto.APORTACION_CAPITAL;
+    }
+
     static Predicate<Movimiento> abonoMenorIgualFechaPeriodo(LocalDate date, int periodo){
         return esAbono()
                 .and(esMenorOIgualFecha(date))
@@ -742,7 +749,7 @@ abstract class PeriodoHelper {
     }
 
     static BigDecimal value(double d){
-        return BigDecimal.valueOf(d).setScale(2, RoundingMode.HALF_EVEN);
+        return BigDecimal.valueOf(d).round(DOS_DECIMALES);
     }
 
     static BigDecimal sumatoriaCargo(Stream<Movimiento> s){

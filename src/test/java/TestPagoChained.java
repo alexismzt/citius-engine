@@ -716,6 +716,7 @@ public class TestPagoChained {
 
     @Test
     void testPagoChain() {
+
         PagoChained moratorio = new PagoCuotaMoratoriaPendiente();
         PagoChained ordinario = new PagoOrdinarioPendiente();
         PagoChained capital = new PagoCapitalPendiente();

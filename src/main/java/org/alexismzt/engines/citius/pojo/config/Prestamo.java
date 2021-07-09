@@ -679,17 +679,24 @@
 package org.alexismzt.engines.citius.pojo.config;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.alexismzt.engines.citius.handlers.exceptions.DuplicidadDeInteresOrdinarioException;
 import org.alexismzt.engines.citius.handlers.exceptions.NoExisteElperiodoException;
 import org.alexismzt.engines.citius.handlers.exceptions.PeriodoMayorAlPlazoException;
 import org.alexismzt.engines.citius.handlers.exceptions.PeriodosDelCreditoNoInicializadoException;
+import org.alexismzt.engines.citius.helpers.TipoConcepto;
+import org.alexismzt.engines.citius.pojo.Movimiento;
 import org.alexismzt.engines.citius.pojo.Periodo;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 @Data
+@NoArgsConstructor
 public final class Prestamo {
     private BigDecimal montoPrestamo;
     private BigDecimal tasaOrdinaria;
@@ -698,6 +705,24 @@ public final class Prestamo {
     private int plazo;
     private Map<Integer, Periodo> periodos;
 
+    public Prestamo(BigDecimal montoPrestamo, BigDecimal tasaOrdinaria,
+                    boolean modoFactor,
+                    BigDecimal factorMoratorio,
+                    BigDecimal pagoMensual,
+                    int plazo, List<Movimiento> movimientoList) {
+        this.montoPrestamo = montoPrestamo;
+        this.tasaOrdinaria = tasaOrdinaria;
+        this.modoFactor = modoFactor;
+        this.factorMoratorio = factorMoratorio;
+        this.plazo = plazo;
+
+        for(int i = 1; i<= plazo; i++){
+            final int j = i;
+            periodos.put(i,
+                    new Periodo(pagoMensual, i, movimientoList.stream()
+                    .filter(x-> x.getPeriodo() == j).collect(Collectors.toList())));
+        }
+    }
 
     public BigDecimal getSaldoInsoluto(LocalDate fecha){
         refreshPeriodos(fecha);
@@ -706,15 +731,15 @@ public final class Prestamo {
         );
     }
 
-    public double getPendiente(LocalDate fecha){
+    public BigDecimal getPendiente(LocalDate fecha){
         refreshPeriodos(fecha);
         return
-                periodos
+                BigDecimal.valueOf(periodos
                         .values()
                         .stream()
                         .filter(
                                 esMenorOIgual(fecha)
-                        ).mapToDouble(x-> x.getPendiente().doubleValue()).sum();
+                        ).mapToDouble(x-> x.getPendiente().doubleValue()).sum());
     }
 
     public BigDecimal getTotalAbonos(LocalDate fecha){
@@ -731,6 +756,18 @@ public final class Prestamo {
     public Periodo getPeriodo(int periodo){
         checkPeriodo(periodo);
         return periodos.get(periodo);
+    }
+
+    public BigDecimal getSaldoCorte(LocalDate fecha){
+        return getPendiente(fecha);
+    }
+
+    public void addMovimientoPeriodo(int periodo, Movimiento movimiento){
+        checkPeriodo(periodo);
+        if(movimiento.getTipoConcepto() == TipoConcepto.INTERES_ORDINARIO
+            || movimiento.getTipoConcepto() == TipoConcepto.INTERES_ORDINARIO_PROP)
+            throw new DuplicidadDeInteresOrdinarioException();
+        periodos.get(periodo).addMovimiento(movimiento);
     }
 
     void checkPeriodo(int p) throws PeriodoMayorAlPlazoException, PeriodosDelCreditoNoInicializadoException,
@@ -750,10 +787,10 @@ public final class Prestamo {
     }
 
     Predicate<Periodo> esMenor(LocalDate fecha){
-        return periodo -> periodo.getFechaVencimiento(). isBefore(fecha);
+        return periodo -> periodo.getFechaVencimiento().isBefore(fecha);
     }
     Predicate<Periodo> esIgual(LocalDate fecha){
-        return periodo -> periodo.getFechaVencimiento(). isEqual(fecha);
+        return periodo -> periodo.getFechaVencimiento().isEqual(fecha);
     }
     Predicate<Periodo> esMenorOIgual(LocalDate fecha){
         return esMenor(fecha).or(esIgual(fecha));
