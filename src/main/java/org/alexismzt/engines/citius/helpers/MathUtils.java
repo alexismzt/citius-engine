@@ -688,6 +688,6 @@ public final class MathUtils {
     public static final MathContext DOS_DECIMALES = new MathContext(2, RoundingMode.HALF_EVEN);
 
     public static BigDecimal round(BigDecimal d){
-        return d.round(DOS_DECIMALES);
+        return d.setScale(2, RoundingMode.HALF_EVEN);
     }
 }

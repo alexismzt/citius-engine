@@ -682,6 +682,8 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.text.NumberFormat;
+import java.util.Locale;
 
 import static org.alexismzt.engines.citius.helpers.MathUtils.DOS_DECIMALES;
 
@@ -694,18 +696,22 @@ public class Amortizacion {
     BigDecimal capital;
 
     BigDecimal getSaldoFinal(){
-        return capital.subtract(amortizacion).round(DOS_DECIMALES);
+        return capital.subtract(amortizacion).setScale(2, RoundingMode.HALF_EVEN);
     }
 
     @Override
     public String toString() {
+        NumberFormat format = NumberFormat.getCurrencyInstance(Locale.US);
+        format.setMinimumFractionDigits(1);
+        format.setMaximumFractionDigits(2);
         return "Amortizacion{" +
                 "periodo=" + periodo +
                 ", pagoMensual=" + pagoMensual +
-                ", interes=" + interes +
+                ", interes=" +
+                format.format(interes) +
                 ", amortizacion=" + amortizacion +
-                ", capital=" + capital +
-                ", Saldo Final: " + getSaldoFinal()+
+                ", capital=" + format.format(capital) +
+                ", Saldo Final: " + format.format(getSaldoFinal())+
                 '}';
     }
 }

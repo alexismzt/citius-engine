@@ -789,7 +789,7 @@ public class Periodo{
     public BigDecimal getPendienteMensualidad() {
         float pendiente = pagoMensual.subtract(
                 getPendienteOrdinario().add(getPendienteCapital())
-        ).round(DOS_DECIMALES).floatValue();
+        ).setScale(2, RoundingMode.HALF_EVEN).floatValue();
         if(pendiente <= 0)
             return BigDecimal.ZERO;
         else

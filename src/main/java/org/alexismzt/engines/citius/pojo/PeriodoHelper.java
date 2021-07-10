@@ -749,7 +749,7 @@ abstract class PeriodoHelper {
     }
 
     static BigDecimal value(double d){
-        return BigDecimal.valueOf(d).round(DOS_DECIMALES);
+        return BigDecimal.valueOf(d).setScale(2, RoundingMode.HALF_EVEN);
     }
 
     static BigDecimal sumatoriaCargo(Stream<Movimiento> s){

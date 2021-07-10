@@ -694,9 +694,10 @@ public class CitiusEngineTest {
 
         CitiusEngine engine = CitiusEngineFactory.getInstance(CitiusCalculo.FRANCES);
 
-        Map<Integer, Amortizacion> tabla = FinantialHelper.buildTablaAmortizacion(
-                60000, (1.5d*1.16d)/100d, 36, CitiusCalculo.FRANCES
-        );
+        Map<Integer, Amortizacion> tabla = FinantialHelper.buildTablaAmortizacion(60000,
+                (1.5d*1.16d)/100d,
+                36,
+                CitiusCalculo.FRANCES);
 
         tabla.forEach((key, value) ->
             System.out.println("Key: " + key + " Value: " + value.toString())
