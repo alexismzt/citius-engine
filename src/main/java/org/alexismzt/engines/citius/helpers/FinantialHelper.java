@@ -685,8 +685,6 @@ import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.alexismzt.engines.citius.helpers.MathUtils.DOS_DECIMALES;
-
 public final class FinantialHelper {
 
     /**
@@ -708,7 +706,6 @@ public final class FinantialHelper {
                                         tasa/
                                 (1 - (Math.pow( 1 + tasa, plazo * -1)))
         );
-
         return Math.round(factor*100.0d)/100.0d;
     }
 
@@ -727,9 +724,11 @@ public final class FinantialHelper {
             int plazo){
         if(plazo == 0)
             plazo = 1;
-        return
-                (monto * tasa)/
-        (1 - (Math.pow(1 - tasa , plazo)));
+        double factor =
+                                (monto * tasa)/
+                        (1 - (Math.pow(1 - tasa , plazo)));
+
+        return Math.round(factor*100.0d)/100.0d;
     }
 
 

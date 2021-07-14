@@ -699,10 +699,10 @@ public class CalculoSaldoInsoluto extends CitiusEngineImpl implements CitiusEngi
     public BigDecimal calcularCuotaMoratoria(BigDecimal monto, int periodo, LocalDate fecha, int dias) {
         if(prestamo.isModoFactor())
             return prestamo.getFactorMoratorio();
-
         BigDecimal factor = scaled(monto.multiply(prestamo.getFactorMoratorio()));
         if(dias != 0)
             factor = factor.divide(BigDecimal.valueOf(30), RoundingMode.UP );
         return scaled(factor.multiply(BigDecimal.valueOf(dias)));
     }
+
 }
