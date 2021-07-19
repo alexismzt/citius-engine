@@ -683,13 +683,13 @@ import lombok.Data;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.NumberFormat;
+import java.time.LocalDate;
 import java.util.Locale;
-
-import static org.alexismzt.engines.citius.helpers.MathUtils.DOS_DECIMALES;
 
 @Data
 public class Amortizacion {
     int periodo;
+    LocalDate fechaVencimiento;
     BigDecimal pagoMensual;
     BigDecimal interes;
     BigDecimal amortizacion;
@@ -706,6 +706,7 @@ public class Amortizacion {
         format.setMaximumFractionDigits(2);
         return "Amortizacion{" +
                 "periodo=" + periodo +
+                " fecha vencimiento" + fechaVencimiento +
                 ", pagoMensual=" + pagoMensual +
                 ", interes=" +
                 format.format(interes) +

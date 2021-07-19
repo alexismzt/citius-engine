@@ -676,19 +676,15 @@
  *
  */
 
-package org.alexismzt.engines.citius;
+package org.alexismzt.engines.citius.handlers.exceptions;
 
-import lombok.Data;
-import org.alexismzt.engines.citius.base.CitiusEngine;
-import org.alexismzt.engines.citius.pojo.Periodo;
-import org.alexismzt.engines.citius.pojo.config.Prestamo;
-
-import java.util.HashMap;
-import java.util.Map;
-
-@Data
-public class Periodos {
-    Map<Integer, Periodo> periodos = new HashMap<>();
-    Prestamo configuracion;
-    CitiusEngine engine;
+public class AmortizacionNoInicializada extends RuntimeException {
+    /**
+     * Constructs a new runtime exception with {@code null} as its
+     * detail message.  The cause is not initialized, and may subsequently be
+     * initialized by a call to {@link #initCause}.
+     */
+    public AmortizacionNoInicializada() {
+        super("La amortización no esta inicializada!. Por favor revise los parametros de configuración");
+    }
 }

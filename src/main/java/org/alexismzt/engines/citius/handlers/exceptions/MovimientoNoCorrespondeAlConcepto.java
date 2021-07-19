@@ -676,19 +676,12 @@
  *
  */
 
-package org.alexismzt.engines.citius;
+package org.alexismzt.engines.citius.handlers.exceptions;
 
-import lombok.Data;
-import org.alexismzt.engines.citius.base.CitiusEngine;
-import org.alexismzt.engines.citius.pojo.Periodo;
-import org.alexismzt.engines.citius.pojo.config.Prestamo;
+import org.alexismzt.engines.citius.helpers.TipoConcepto;
 
-import java.util.HashMap;
-import java.util.Map;
-
-@Data
-public class Periodos {
-    Map<Integer, Periodo> periodos = new HashMap<>();
-    Prestamo configuracion;
-    CitiusEngine engine;
+public class MovimientoNoCorrespondeAlConcepto extends RuntimeException {
+    public MovimientoNoCorrespondeAlConcepto(TipoConcepto concepto) {
+        super(String.format("El movimiento no corresponde al Concepto:[%s]", concepto.getText()));
+    }
 }

@@ -676,19 +676,108 @@
  *
  */
 
-package org.alexismzt.engines.citius;
+package org.alexismzt.engines.citius.helpers;
 
-import lombok.Data;
-import org.alexismzt.engines.citius.base.CitiusEngine;
-import org.alexismzt.engines.citius.pojo.Periodo;
-import org.alexismzt.engines.citius.pojo.config.Prestamo;
+import java.time.LocalDate;
+import java.time.Month;
 
-import java.util.HashMap;
-import java.util.Map;
+public class UtilsHelper {
 
-@Data
-public class Periodos {
-    Map<Integer, Periodo> periodos = new HashMap<>();
-    Prestamo configuracion;
-    CitiusEngine engine;
+    /**
+     * Funcion que devuelte los días transcurridos en un periodo determinado,
+     * tomando como base el año comercial (12 meses de 30 días)
+     * <br>
+     * La razón para dicho ajuste en la duración del año natural está en la simplificación de muchos cálculos,
+     * principalmente en el área financiera. Se toma un año como la suma de doce meses, simplificando la
+     * duración de esos meses y haciéndolos todos iguales a 30 días. Con ello, todos los meses duran igual
+     * y suponen un total de 360 días al año.
+     * <br>
+     * Este año se utiliza para el cálculo de intereses bancarios y de descuentos. Gracias a este sistema,
+     * todos los meses devengan los mismos intereses (los correspondientes a 30 días)
+     * y no devengan más los meses de mayor duración.
+     * <br>
+     * Por ello, no supone que el año termine cinco días antes, sino que hace desaparecer 5 días del calendario de
+     * forma artificial. Por lo demás, el año sigue empezando el primer día de enero,
+     * y terminando el último día de diciembre.
+     * <br>
+     * @param fechaInicio Fecha de inicio
+     * @param fechaFinal Fecha final
+     * @return el numero de días transcurridos
+     */
+    public static int dias360(LocalDate fechaInicio, LocalDate fechaFinal){
+        int yInicio = fechaInicio.getYear();
+        int mIncio = fechaInicio.getMonthValue();
+        int dIncio = fechaInicio.getDayOfMonth();
+        int yFinal = fechaFinal.getYear();
+        int mFinal = fechaFinal.getMonthValue();
+        int dFinal = fechaFinal.getDayOfMonth();
+        int rIncio = (yInicio * 360) + (mIncio * 30) + dIncio;
+        int rFinal= (yFinal * 360) + (mFinal * 30) + dFinal;
+
+        return rFinal - rIncio;
+    }
+
+    /**
+     * Incrementar la fecha un mes.
+     * <p>
+     * Se incremetnara la fecha en 1 mes cuando sea posible.
+     * <p>
+     * En en ministraciones con fecha 31 - x - xxxxx, en la siguiente iteración la
+     * fecha se establecia en 30 si el mes no contenia 31 dias y así
+     * consecutivamente.
+     * <p>
+     * Para el caso especifico de Febrero, la fecha quedaba en el ultimo día del mes
+     * 28 ó 29, y así en los demas meses subsecuentes, con la implementacion de este
+     * metodo se previente que esto pase y quedara en meses con 31 el día 31, de
+     * igual forma en los meses con 30 días o el caso de Febrero sin alterar las
+     * demas fechas subsecuentes.
+     *
+     * @param fecha   Fecha a la cual se le incrementara 1 mes
+     * @param dia día que servira como pivote para realizar las operaciones.
+     * @return Retorna la fecha correcta en base a los criterios dados
+     */
+    public static LocalDate incrementaMes(LocalDate fecha, int dia){
+        return incrementaMes(fecha, dia, 1);
+    }
+
+    /**
+     * Incrementar la fecha un mes.
+     * <p>
+     * Se incremetnara la fecha en <italic>n</italic> meses cuando sea posible.
+     * <p>
+     * En en ministraciones con fecha 31 - x - xxxxx, en la siguiente iteración la
+     * fecha se establecia en 30 si el mes no contenia 31 dias y así
+     * consecutivamente.
+     * <p>
+     * Para el caso especifico de Febrero, la fecha quedaba en el ultimo día del mes
+     * 28 ó 29, y así en los demas meses subsecuentes, con la implementacion de este
+     * metodo se previente que esto pase y quedara en meses con 31 el día 31, de
+     * igual forma en los meses con 30 días o el caso de Febrero sin alterar las
+     * demas fechas subsecuentes.
+     *
+     * @param fecha   Fecha a la cual se le incrementara 1 mes
+     * @param dia día que servira como pivote para realizar las operaciones.
+     * @param numeroMeses número de meses a agregar
+     * @return Retorna la fecha correcta en base a los criterios dados
+     */
+    public static LocalDate incrementaMes(LocalDate fecha, int dia, int numeroMeses){
+        if(dia != -1){
+            LocalDate tmp = fecha.plusMonths(numeroMeses);
+            if(tmp.getMonth() != Month.FEBRUARY && tmp.getDayOfMonth() != dia) {
+                if(tmp.getMonth() == Month.APRIL
+                     || tmp.getMonth() == Month.JUNE
+                     || tmp.getMonth() == Month.SEPTEMBER
+                     || tmp.getMonth() == Month.NOVEMBER
+            ) {
+                    if (dia == 31)
+                        dia = 30;
+                    tmp = LocalDate.of(tmp.getYear(), tmp.getMonthValue(), dia);
+                }
+            }
+            return tmp;
+        }
+        return fecha.plusMonths(numeroMeses);
+    }
+
+
 }

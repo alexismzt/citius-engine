@@ -686,7 +686,12 @@ import org.alexismzt.engines.citius.pojo.Periodo;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.math.MathContext;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -694,6 +699,7 @@ import java.util.SortedMap;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 public class TestPagoChained {
@@ -777,5 +783,33 @@ public class TestPagoChained {
         System.out.println(BigDecimal.valueOf(0.3).compareTo(bd0.add(bd1)) == 0);
 
 
+    }
+
+    @Test
+    void md5Test() throws NoSuchAlgorithmException {
+
+        String md5Result="ABBB7610B191AC2B2C4BA32F7F72F27FD2184D2";
+
+        MessageDigest md = MessageDigest.getInstance("SHA-1");
+        md.update("admin10".getBytes(StandardCharsets.UTF_8));
+        byte[] hash = md.digest();
+
+        String myHash = toHexString(hash);
+        //assertEquals(md5Result.length(), myHash.length());
+        assertEquals(md5Result, myHash.toUpperCase());
+    }
+
+    public static String toHexString(byte[] bytes) {
+        StringBuilder hexString = new StringBuilder();
+
+        for (int i = 0; i < bytes.length; i++) {
+            String hex = Integer.toHexString(0xFF & bytes[i]);
+//            if (hex.length() == 1) {
+//                hexString.append('0');
+//            }
+            hexString.append(hex);
+        }
+
+        return hexString.toString();
     }
 }

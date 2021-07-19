@@ -680,6 +680,7 @@ package org.alexismzt.engines.citius.base.modo;
 
 import org.alexismzt.engines.citius.base.CitiusEngine;
 import org.alexismzt.engines.citius.base.CitiusEngineImpl;
+import org.alexismzt.engines.citius.pojo.Periodo;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -688,21 +689,21 @@ import java.time.LocalDate;
 public class CalculoSaldoInsoluto extends CitiusEngineImpl implements CitiusEngine {
 
     @Override
-    public BigDecimal calcularInteresOrdinario(BigDecimal monto, int periodo, LocalDate fecha, int dias) {
-        BigDecimal factor = scaled(monto.multiply(prestamo.getTasaOrdinaria()));
+    public BigDecimal calcularInteresOrdinario(BigDecimal monto, Periodo periodo, LocalDate fecha, int dias) {
+        BigDecimal factor = sc(monto.multiply(prestamo.getTasaOrdinaria()));
         if(dias != 0)
             factor = factor.divide(BigDecimal.valueOf(30), RoundingMode.UP );
-        return scaled(factor.multiply(BigDecimal.valueOf(dias)));
+        return sc(factor.multiply(BigDecimal.valueOf(dias)));
     }
 
     @Override
-    public BigDecimal calcularCuotaMoratoria(BigDecimal monto, int periodo, LocalDate fecha, int dias) {
+    public BigDecimal calcularCuotaMoratoria(BigDecimal monto, Periodo periodo, LocalDate fecha, int dias) {
         if(prestamo.isModoFactor())
             return prestamo.getFactorMoratorio();
-        BigDecimal factor = scaled(monto.multiply(prestamo.getFactorMoratorio()));
+        BigDecimal factor = sc(monto.multiply(prestamo.getFactorMoratorio()));
         if(dias != 0)
             factor = factor.divide(BigDecimal.valueOf(30), RoundingMode.UP );
-        return scaled(factor.multiply(BigDecimal.valueOf(dias)));
+        return sc(factor.multiply(BigDecimal.valueOf(dias)));
     }
 
 }

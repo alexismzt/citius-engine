@@ -679,8 +679,11 @@
 package org.alexismzt.engines.citius.base;
 
 import org.alexismzt.engines.citius.handlers.exceptions.CitiusGeneralException;
+import org.alexismzt.engines.citius.handlers.exceptions.MovimientoNoCorrespondeAlConcepto;
 import org.alexismzt.engines.citius.handlers.exceptions.PagoActionException;
+import org.alexismzt.engines.citius.helpers.TipoConcepto;
 import org.alexismzt.engines.citius.pojo.CitiusComprobante;
+import org.alexismzt.engines.citius.pojo.Movimiento;
 import org.alexismzt.engines.citius.pojo.PagoAction;
 import org.alexismzt.engines.citius.pojo.config.Prestamo;
 
@@ -727,11 +730,81 @@ public abstract class CitiusEngineImpl implements CitiusEngine {
                         BigDecimal pendienteMes = value.getPendienteMensualidad();
                     }
                 });
-
         return false;
     }
 
-    protected BigDecimal scaled(BigDecimal value){
+    @Override
+    public void addOtrosCargos(Movimiento otroCargo) throws MovimientoNoCorrespondeAlConcepto {
+        if(otroCargo.getTipoConcepto() != TipoConcepto.OTROS_CARGOS)
+            throw new MovimientoNoCorrespondeAlConcepto(TipoConcepto.OTROS_CARGOS);
+    }
+
+    @Override
+    public BigDecimal getSaldoCorte(LocalDate fecha) {
+        return null;
+    }
+
+    @Override
+    public BigDecimal getPagoCorriente(LocalDate fecha) {
+        return null;
+    }
+
+    @Override
+    public BigDecimal getSaldoPendiente(LocalDate fecha) {
+        return null;
+    }
+
+    @Override
+    public BigDecimal getInteresPendiente(LocalDate fecha) {
+        return null;
+    }
+
+    @Override
+    public BigDecimal getMoraPendiente(LocalDate fecha) {
+        return null;
+    }
+
+    @Override
+    public BigDecimal getCapitalPendiente(LocalDate fecha) {
+        return null;
+    }
+
+    @Override
+    public BigDecimal getSaldoInsoluto(LocalDate fecha) {
+        return null;
+    }
+
+    @Override
+    public BigDecimal getOtroPendiente(LocalDate fecha) {
+        return null;
+    }
+
+    @Override
+    public BigDecimal getTotalPagado(LocalDate fecha) {
+        return null;
+    }
+
+    @Override
+    public BigDecimal getCapitalPagado(LocalDate fecha) {
+        return null;
+    }
+
+    @Override
+    public BigDecimal getInteresPagado(LocalDate fecha) {
+        return null;
+    }
+
+    @Override
+    public BigDecimal getMoraPagado(LocalDate fecha) {
+        return null;
+    }
+
+    @Override
+    public BigDecimal getOtrosPagado(LocalDate fecha) {
+        return null;
+    }
+
+    protected BigDecimal sc(BigDecimal value){
         return value.setScale(2, RoundingMode.UP);
     }
 }

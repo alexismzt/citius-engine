@@ -679,6 +679,7 @@
 package org.alexismzt.engines.citius.pojo;
 
 import lombok.Data;
+import org.alexismzt.engines.citius.handlers.exceptions.AmortizacionNoInicializada;
 import org.alexismzt.engines.citius.handlers.exceptions.CargoNoInicializado;
 import org.alexismzt.engines.citius.helpers.Amortizacion;
 import org.alexismzt.engines.citius.helpers.TipoConcepto;
@@ -690,8 +691,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.alexismzt.engines.citius.helpers.MathUtils.DOS_DECIMALES;
-import static org.alexismzt.engines.citius.pojo.PeriodoHelper.*;
+import static org.alexismzt.engines.citius.helpers.PeriodoHelper.*;
 
 @Data
 public class Periodo{
@@ -800,7 +800,9 @@ public class Periodo{
         ordinario = new Movimiento();
     }
 
-    public Periodo(BigDecimal pagoMensual,int periodo, List<Movimiento> movimientos) {
+    public Periodo(BigDecimal pagoMensual,int periodo, List<Movimiento> movimientos, Amortizacion amortizacion) {
+        if(amortizacion == null)
+            throw new AmortizacionNoInicializada();
         this.periodo = periodo;
         this.pagoMensual = pagoMensual;
         Movimiento ordinario =
@@ -813,8 +815,15 @@ public class Periodo{
             this.ordinario = new Movimiento();
             this.ordinario.setTipoConcepto(TipoConcepto.INTERES_ORDINARIO);
             this.ordinario.setCargo( null );
+            this.ordinario.setFecha(amortizacion.getFechaVencimiento());
         }
-        else this.ordinario = ordinario;
+        else
+            this.ordinario = ordinario;
+
+        if(ordinario == null)
+            throw new CargoNoInicializado();
+
+        this.fechaVencimiento = amortizacion.getFechaVencimiento();
 
         abonosList = movimientos.stream().filter(esAbono()).collect(Collectors.toList());
         aportacionCapitalList = movimientos.stream().filter(esAportacion()).collect(Collectors.toList());

@@ -676,19 +676,105 @@
  *
  */
 
-package org.alexismzt.engines.citius;
+package org.alexismzt.engines.citius.helpers;
 
-import lombok.Data;
-import org.alexismzt.engines.citius.base.CitiusEngine;
-import org.alexismzt.engines.citius.pojo.Periodo;
-import org.alexismzt.engines.citius.pojo.config.Prestamo;
+import lombok.Getter;
+import org.alexismzt.engines.citius.handlers.exceptions.ExistenCargosEnStream;
+import org.alexismzt.engines.citius.pojo.Movimiento;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
-@Data
-public class Periodos {
-    Map<Integer, Periodo> periodos = new HashMap<>();
-    Prestamo configuracion;
-    CitiusEngine engine;
+public abstract class PeriodoHelper {
+    public static Predicate<Movimiento> esMenorFechaVencimiento(LocalDate fecha){
+        return (movimientoCuenta -> movimientoCuenta.getFecha().isBefore(fecha));
+    }
+    public static Predicate<Movimiento> esIgualFechaVencimiento(LocalDate fecha){
+        return movimientoCuenta -> movimientoCuenta.getFecha().isEqual(fecha);
+    }
+    public static Predicate<Movimiento> esMenorPeriodo(int periodo){
+        return movimientoCuenta -> movimientoCuenta.getPeriodo() < periodo;
+    }
+    public static Predicate<Movimiento> esIgualPeriodo(int periodo){
+        return movimientoCuenta -> movimientoCuenta.getPeriodo() == periodo;
+    }
+    public static Predicate<Movimiento> esMenorOIgualPeriodo(int periodo){
+        return esMenorPeriodo(periodo).or(esIgualPeriodo(periodo));
+    }
+    public static Predicate<Movimiento> esMenorOIgualFecha(LocalDate fecha){
+        return esMenorFechaVencimiento(fecha).or(esIgualFechaVencimiento(fecha));
+    }
+
+    public static Predicate<Movimiento> esInteresOrdinario(){
+        return movimientoCuenta ->
+                movimientoCuenta.getTipoConcepto() == TipoConcepto.INTERES_ORDINARIO_PROP ||
+                        movimientoCuenta.getTipoConcepto() == TipoConcepto.INTERES_ORDINARIO;
+    }
+    public static Predicate<Movimiento> esInteresMoratorio(){
+        return movimientoCuenta ->
+                movimientoCuenta.getTipoConcepto() == TipoConcepto.INTERES_MORATORIO;
+    }
+
+    public static Predicate<Movimiento> esOtroCargo(){
+        return movimientoCuenta ->
+                movimientoCuenta.getTipoConcepto() == TipoConcepto.OTROS_CARGOS;
+    }
+
+    public static Predicate<Movimiento> esCargo(){
+        return esInteresMoratorio()
+                .or(esInteresMoratorio())
+                .or(esOtroCargo());
+    }
+
+    public static Predicate<Movimiento> esAbono(){
+        return movimientoCuenta -> movimientoCuenta.getTipoConcepto() == TipoConcepto.ABONO ||
+                movimientoCuenta.getTipoConcepto() == TipoConcepto.ABONO_ANTICIPADO ||
+                movimientoCuenta.getTipoConcepto() == TipoConcepto.ABONO_Y_CAPITAL
+                ;
+    }
+
+    public static Predicate<Movimiento> esAportacion(){
+        return movimiento -> movimiento.getTipoConcepto() == TipoConcepto.APORTACION_CAPITAL;
+    }
+
+    public static Predicate<Movimiento> abonoMenorIgualFechaPeriodo(LocalDate date, int periodo){
+        return esAbono()
+                .and(esMenorOIgualFecha(date))
+                .and(esMenorOIgualPeriodo(periodo));
+    }
+
+    public static BigDecimal value(double d){
+        return BigDecimal.valueOf(d).setScale(2, RoundingMode.HALF_EVEN);
+    }
+
+    public static BigDecimal sumatoriaCargo(Stream<Movimiento> s){
+        return value(s.mapToDouble(xx -> xx.getCargo().doubleValue()).sum());
+    }
+
+    @Getter
+    public static class DetalleAbono{
+        BigDecimal capital;
+        BigDecimal ordinario;
+        BigDecimal moratorio;
+        BigDecimal otros;
+
+        private DetalleAbono(Stream<Movimiento> stream) {
+            long conteo = stream
+                    .filter(esCargo())
+                    .count();
+            if(conteo > 0)
+                throw new ExistenCargosEnStream();
+            capital = value(stream.mapToDouble(xx -> xx.getCapitalPago().doubleValue()).sum());
+            ordinario = value(stream.mapToDouble(xx -> xx.getOrdinarioPago().doubleValue()).sum());
+            moratorio = value(stream.mapToDouble(xx -> xx.getMoraPago().doubleValue()).sum());
+            otros = value(stream.mapToDouble(xx -> xx.getOtroPago().doubleValue()).sum());
+        }
+
+        public static DetalleAbono getInstance(Stream<Movimiento> stream){
+            return new DetalleAbono(stream);
+        }
+    }
 }

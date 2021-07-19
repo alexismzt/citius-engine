@@ -678,8 +678,10 @@
 
 package org.alexismzt.engines.citius.base;
 
+import org.alexismzt.engines.citius.handlers.exceptions.MovimientoNoCorrespondeAlConcepto;
 import org.alexismzt.engines.citius.handlers.exceptions.PagoActionException;
 import org.alexismzt.engines.citius.pojo.CitiusComprobante;
+import org.alexismzt.engines.citius.pojo.Movimiento;
 import org.alexismzt.engines.citius.pojo.PagoAction;
 import org.alexismzt.engines.citius.pojo.Periodo;
 import org.alexismzt.engines.citius.pojo.config.Prestamo;
@@ -702,9 +704,25 @@ public interface CitiusEngine {
      */
     Prestamo getConfiguracion();
 
-    BigDecimal calcularInteresOrdinario(BigDecimal monto, int periodo, LocalDate fecha, int dias);
-    BigDecimal calcularCuotaMoratoria(BigDecimal monto, int periodo, LocalDate fecha, int dias);
+    void addOtrosCargos(Movimiento otroCargo) throws MovimientoNoCorrespondeAlConcepto;
+
+    BigDecimal calcularInteresOrdinario(BigDecimal monto, Periodo periodo, LocalDate fecha, int dias);
+    BigDecimal calcularCuotaMoratoria(BigDecimal monto, Periodo periodo, LocalDate fecha, int dias);
 
     boolean executeEngine(LocalDate fecha);
 
+    BigDecimal getSaldoCorte(LocalDate fecha);
+    BigDecimal getPagoCorriente(LocalDate fecha);
+    BigDecimal getSaldoPendiente(LocalDate fecha);
+    BigDecimal getInteresPendiente(LocalDate fecha);
+    BigDecimal getMoraPendiente(LocalDate fecha);
+    BigDecimal getCapitalPendiente(LocalDate fecha);
+    BigDecimal getOtroPendiente(LocalDate fecha);
+    BigDecimal getSaldoInsoluto(LocalDate fecha);
+
+    BigDecimal getTotalPagado(LocalDate fecha);
+    BigDecimal getCapitalPagado(LocalDate fecha);
+    BigDecimal getInteresPagado(LocalDate fecha);
+    BigDecimal getMoraPagado(LocalDate fecha);
+    BigDecimal getOtrosPagado(LocalDate fecha);
 }
